@@ -5,6 +5,7 @@ defmodule Exddb.Model do
     quote do
       import Exddb.Model, only: [model: 1]
        @hash_key :hash
+       @table_name Atom.to_string(Mix.env) <> "_" <> inspect(__MODULE__)
     end
   end
 
@@ -28,7 +29,8 @@ defmodule Exddb.Model do
         Exddb.Model.__struct__(struct_fields),
         Exddb.Model.__fields__(model_fields),
         Exddb.Model.__key__(@hash_key),
-        Exddb.Model.__new__
+        Exddb.Model.__new__,
+        Exddb.Model.__table_name__(@table_name)
       ]
 
     end
@@ -85,6 +87,12 @@ defmodule Exddb.Model do
       def __schema__(:field, _), do: nil
       def __schema__(:fields), do: unquote(field_names)
     end]
+  end
+
+  def __table_name__(table_name) do
+    quote do
+      def __schema__(:table_name), do: unquote(table_name)
+    end
   end
 
 end

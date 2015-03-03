@@ -5,12 +5,13 @@ defmodule ExddbTest do
     use Exddb.Model
 
     @hash_key :data_id
+
     model do
       field :data_id, :string
       field :name, :string, default: "lol"
       field :data, :binary, default: nil
     end
-  
+
   end
 
   test "schema" do
@@ -19,6 +20,18 @@ defmodule ExddbTest do
     assert TestModel.__schema__(:field, :data) == :binary
     assert TestModel.__schema__(:key) == :data_id
     assert TestModel.__schema__(:field, :data_id) == :string
+    assert TestModel.__schema__(:table_name) == "test_ExddbTest.TestModel"
+  end
+
+  defmodule TestCustomTableName do
+    use Exddb.Model
+    @table_name "test_model"
+    model do
+    end
+  end
+
+  test "schema custom table_name" do
+    assert TestCustomTableName.__schema__(:table_name) == "test_model"
   end
 
   test "default values" do
