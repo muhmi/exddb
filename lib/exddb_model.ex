@@ -1,9 +1,10 @@
-# very much copied from https://github.com/elixir-lang/ecto/blob/master/lib/ecto/schema.ex
+# Lots borrowed from https://github.com/elixir-lang/ecto/blob/master/lib/ecto/schema.ex
 defmodule Exddb.Model do
 
   defmacro __using__(_) do
     quote do
       import Exddb.Model, only: [model: 1]
+       @hash_key :hash
     end
   end 
 
@@ -20,18 +21,17 @@ defmodule Exddb.Model do
         :ok
       end
 
+      struct_fields = @struct_fields |> Enum.reverse
+      model_fields = @model_fields |> Enum.reverse
+     
+
       Module.eval_quoted __MODULE__, [
-        Exddb.Model.__struct__(@struct_fields |> Enum.reverse), 
-        Exddb.Model.__fields__(@model_fields |> Enum.reverse),
-        Exddb.Model.__keys__(@model_keys |> Enum.reverse)
+        Exddb.Model.__struct__(struct_fields), 
+        Exddb.Model.__fields__(model_fields),
+        Exddb.Model.__key__(@hash_key),
+        Exddb.Model.__new__
       ]
 
-    end
-  end
-
-  defmacro key(name, type \\ :string, opts \\ []) do
-    quote do
-      Exddb.Model.__key__(__MODULE__, unquote(name), unquote(type), unquote(opts))  
     end
   end
 
@@ -40,12 +40,6 @@ defmodule Exddb.Model do
 			Exddb.Model.__field__(__MODULE__, unquote(name), unquote(type), unquote(opts))	
 		end
 	end
-
-  def __key__(module, name, type, opts) do
-    Module.put_attribute(module, :struct_fields, {name, opts[:default]})
-    Module.put_attribute(module, :model_fields, {name, type})
-    Module.put_attribute(module, :model_keys, {name, type})
-  end
 
 	def __field__(module, name, type, opts) do
 		Module.put_attribute(module, :struct_fields, {name, opts[:default]})
@@ -58,17 +52,25 @@ defmodule Exddb.Model do
     end
   end
 
-  def __keys__(keys) do
-    quoted = if Enum.count(keys) > 1 do
-      quoted = quote do
-        def __schema__(:key), do: :hash_range
-      end
-    else
-      quoted = quote do
-        def __schema__(:key), do: :hash
+  def __new__ do
+    quote do
+      def new(attributes \\ []) do
+        defaults = __struct__
+        attributes = Enum.into(attributes, Map.new)
+        for k <- Map.keys(attributes) do
+          if not Map.has_key?(defaults, k) do
+            raise ArgumentError, "Key #{inspect k} not defined in schema #{__MODULE__}"
+          end
+        end
+        Map.merge(defaults, attributes)
       end
     end
-    quoted
+  end
+
+  def __key__(name) do
+    quote do
+      def __schema__(:key), do: unquote(name)
+    end
   end
 
   def __fields__(fields) do
