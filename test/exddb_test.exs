@@ -21,6 +21,9 @@ defmodule ExddbTest do
     assert TestModel.__schema__(:key) == :data_id
     assert TestModel.__schema__(:field, :data_id) == :string
     assert TestModel.__schema__(:table_name) == "test_ExddbTest.TestModel"
+    assert TestModel.__schema__(:null, :data_id) == false
+    assert TestModel.__schema__(:null, :data) == true
+    assert TestModel.__schema__(:null, :name) == true
   end
 
   defmodule TestCustomTableName do

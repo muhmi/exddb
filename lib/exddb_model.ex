@@ -14,6 +14,7 @@ defmodule Exddb.Model do
       Module.register_attribute(__MODULE__, :model_keys, accumulate: true)
       Module.register_attribute(__MODULE__, :struct_fields, accumulate: true)
       Module.register_attribute(__MODULE__, :model_fields, accumulate: true)
+      Module.register_attribute(__MODULE__, :allow_null, accumulate: true)
 
       try do
         import Exddb.Model
@@ -30,7 +31,8 @@ defmodule Exddb.Model do
         Exddb.Model.__fields__(model_fields),
         Exddb.Model.__key__(@hash_key),
         Exddb.Model.__new__,
-        Exddb.Model.__table_name__(@table_name)
+        Exddb.Model.__table_name__(@table_name),
+        Exddb.Model.__nulls__(@allow_null, @hash_key)
       ]
 
     end
@@ -39,12 +41,13 @@ defmodule Exddb.Model do
 	defmacro field(name, type \\ :string, opts \\ []) do
 		quote do
 			Exddb.Model.__field__(__MODULE__, unquote(name), unquote(type), unquote(opts))
-		end
+    end
 	end
 
 	def __field__(module, name, type, opts) do
 		Module.put_attribute(module, :struct_fields, {name, opts[:default]})
     Module.put_attribute(module, :model_fields, {name, type})
+    Module.put_attribute(module, :allow_null, {name, Keyword.get(opts, :null, true)})
 	end
 
   def __struct__(struct_fields) do
@@ -72,6 +75,20 @@ defmodule Exddb.Model do
     quote do
       def __schema__(:key), do: unquote(name)
     end
+  end
+
+  def __nulls__(fields, key) do
+    Enum.map(fields, fn {name, allow_null} ->
+      if name == key do
+        quote do
+          def __schema__(:null, unquote(name)), do: false
+        end
+      else
+        quote do
+          def __schema__(:null, unquote(name)), do: unquote(allow_null)
+        end
+      end
+    end)
   end
 
   def __fields__(fields) do
