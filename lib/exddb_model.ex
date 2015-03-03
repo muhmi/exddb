@@ -6,7 +6,7 @@ defmodule Exddb.Model do
       import Exddb.Model, only: [model: 1]
        @hash_key :hash
     end
-  end 
+  end
 
   defmacro model([do: block]) do
     quote do
@@ -23,10 +23,9 @@ defmodule Exddb.Model do
 
       struct_fields = @struct_fields |> Enum.reverse
       model_fields = @model_fields |> Enum.reverse
-     
 
       Module.eval_quoted __MODULE__, [
-        Exddb.Model.__struct__(struct_fields), 
+        Exddb.Model.__struct__(struct_fields),
         Exddb.Model.__fields__(model_fields),
         Exddb.Model.__key__(@hash_key),
         Exddb.Model.__new__
@@ -37,7 +36,7 @@ defmodule Exddb.Model do
 
 	defmacro field(name, type \\ :string, opts \\ []) do
 		quote do
-			Exddb.Model.__field__(__MODULE__, unquote(name), unquote(type), unquote(opts))	
+			Exddb.Model.__field__(__MODULE__, unquote(name), unquote(type), unquote(opts))
 		end
 	end
 
