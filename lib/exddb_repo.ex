@@ -46,7 +46,7 @@ defmodule Exddb.Repo do
 
         case model.__validate__(record) do
           :ok ->
-          case DDBModel.Database.put_item(table_name, {key, model[key]}, Exddb.Type.dump(record), Adapter.expect_not_exists(key)) do
+          case @adapter.put_item(table_name, {key, model[key]}, Exddb.Type.dump(record), Adapter.expect_not_exists(key)) do
             {:ok, _}   -> {:ok, record}
             error           -> {:error, error}
           end
