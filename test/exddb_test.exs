@@ -1,6 +1,10 @@
 defmodule ExddbTest do
   use ExUnit.Case
 
+  defmodule TestRepo do
+    use Exddb.Repo, adapter: Exddb.Adapters.FS
+  end
+
   defmodule TestModel do
     use Exddb.Model
 

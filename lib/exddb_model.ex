@@ -1,5 +1,10 @@
 # Lots borrowed from https://github.com/elixir-lang/ecto/blob/master/lib/ecto/schema.ex
 defmodule Exddb.Model do
+  use Behaviour
+
+  @type t :: module
+
+  defcallback __schema__(t :: term) :: no_return
 
   defmacro __using__(_) do
     quote do
@@ -15,6 +20,8 @@ defmodule Exddb.Model do
       Module.register_attribute(__MODULE__, :struct_fields, accumulate: true)
       Module.register_attribute(__MODULE__, :model_fields, accumulate: true)
       Module.register_attribute(__MODULE__, :allow_null, accumulate: true)
+
+      @behaviour Exddb.Model
 
       try do
         import Exddb.Model

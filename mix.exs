@@ -25,6 +25,9 @@ defmodule Exddb.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [
+      {:jsx, github: "talentdeficit/jsx", override: true},
+      {:erlcloud, github: "gleber/erlcloud"}
+    ]
   end
 end

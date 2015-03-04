@@ -1,6 +1,8 @@
 defmodule Exddb.Adapter do
   use Behaviour
 
+  @type t :: module
+
   defcallback create_table(table_name :: String.t, key_spec :: String.t, key :: term, write_units :: integer, read_units :: integer) :: no_return
   defcallback delete_table(table_name :: String.t) :: no_return
 
