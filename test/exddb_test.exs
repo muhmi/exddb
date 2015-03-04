@@ -10,12 +10,13 @@ defmodule ExddbTest do
       field :data_id, :string
       field :name, :string, default: "lol"
       field :data, :binary, default: "trololoo", null: false
+      field :number, :integer
     end
 
   end
 
   test "schema" do
-    assert TestModel.__schema__(:fields) == [:data_id, :name, :data]
+    assert TestModel.__schema__(:fields) == [:data_id, :name, :data, :number]
     assert TestModel.__schema__(:field, :name) == :string
     assert TestModel.__schema__(:field, :data) == :binary
     assert TestModel.__schema__(:key) == :data_id
@@ -35,6 +36,14 @@ defmodule ExddbTest do
 
   test "schema custom table_name" do
     assert TestCustomTableName.__schema__(:table_name) == "test_model"
+  end
+
+  test "type conversions" do
+    [id, name, data, number] = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new)
+    assert id == {"data_id", {:s, nil}}
+    assert name == {"name", {:s, "lol"}}
+    assert data == {"data", {:b, "trololoo"}}
+    assert number == {"number", {:n, 0}}
   end
 
   test "default values" do

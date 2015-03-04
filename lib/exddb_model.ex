@@ -45,6 +45,18 @@ defmodule Exddb.Model do
     end
 	end
 
+  def __field__(module, name, :integer, []) do
+    __field__(module, name, :integer, [default: 0])
+  end
+
+  def __field__(module, name, :boolean, []) do
+    __field__(module, name, :boolean, [default: false])
+  end
+
+  def __field__(module, name, :float, []) do
+    __field__(module, name, :boolean, [default: 0.0])
+  end
+
 	def __field__(module, name, type, opts) do
 		Module.put_attribute(module, :struct_fields, {name, opts[:default]})
     Module.put_attribute(module, :model_fields, {name, type})
