@@ -61,6 +61,8 @@ defmodule ExddbTest do
     assert name == {"name", {:s, "lol"}}
     assert data == {"data", {:b, "trololoo"}}
     assert number == {"number", {:n, 0}}
+    dump = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new)
+    assert dump == ExddbTest.TestModel.__dump__(ExddbTest.TestModel.__parse__(dump))
   end
 
   test "default values" do
