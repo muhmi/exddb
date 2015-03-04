@@ -31,6 +31,14 @@ defmodule ExddbTest do
     assert TestModel.__schema__(:null, :name) == true
   end
 
+  test "validate" do
+    record = ExddbTest.TestModel.new
+    {res, _reason} = ExddbTest.TestModel.__validate__(record)
+    assert res != :ok
+    record = ExddbTest.TestModel.new data_id: 1, data: "trololoollelelre"
+    assert ExddbTest.TestModel.__validate__(record) == :ok
+  end
+
   defmodule TestCustomTableName do
     use Exddb.Model
     @table_name "test_model"

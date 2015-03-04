@@ -40,7 +40,8 @@ defmodule Exddb.Model do
         Exddb.Model.__new__,
         Exddb.Model.__table_name__(@table_name),
         Exddb.Model.__nulls__(@allow_null, @hash_key),
-        Exddb.Model.__convert__
+        Exddb.Model.__convert__,
+        Exddb.Model.__validate__
       ]
 
     end
@@ -136,6 +137,26 @@ defmodule Exddb.Model do
   def __table_name__(table_name) do
     quote do
       def __schema__(:table_name), do: unquote(table_name)
+    end
+  end
+
+  def __validate__ do
+    quote do
+      def __validate__(%{:__struct__ => module} = record) do
+        if module != __MODULE__, do: raise(ArgumentError, "Cannot validate items of type #{module} with #{__MODULE__}")
+        __validate__(Map.keys(record), record)
+      end
+      def __validate__([:__struct__|rest], record), do: __validate__(rest, record)
+      def __validate__([key|rest], record) do
+        value = Map.get(record, key)
+        can_be_null = __schema__(:null, key)
+        if value == nil and not can_be_null do
+          {:error, "#{key} cannot be null!"}
+        else
+          __validate__(rest, record)
+        end
+      end
+      def __validate__([], record), do: :ok
     end
   end
 
