@@ -5,6 +5,7 @@ defmodule Exddb.Model do
   @type t :: module
 
   defcallback __schema__(t :: term) :: no_return
+  defcallback __parse__(t :: term) :: Exddb.Model.t
 
   defmacro __using__(_) do
     quote do

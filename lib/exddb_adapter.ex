@@ -17,4 +17,13 @@ defmodule Exddb.Adapter do
   
   defcallback get_item(table_name :: String.t, key_spec :: term) :: term
 
+  # Helpers
+
+   def expect_not_exists(key_type) do
+    case key_type do
+      {hash, range} -> [expected: [{Atom.to_string(hash), false}, {Atom.to_string(range), false}]]
+      hash          -> [expected: {Atom.to_string(hash), false}]
+    end
+  end
+
 end
