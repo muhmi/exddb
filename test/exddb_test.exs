@@ -38,6 +38,11 @@ defmodule ExddbTest do
     end
   end
 
+  test "create/drop table" do
+    assert TestRepo.create_table(TestModel) == :ok
+    assert TestRepo.delete_table(TestModel) == :ok
+  end
+
   test "schema custom table_name" do
     assert TestCustomTableName.__schema__(:table_name) == "test_model"
   end

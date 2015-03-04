@@ -2,8 +2,16 @@ defmodule Exddb.Adapters.FS do
 
   @behaviour Exddb.Adapter
 
-  def create_table(_table_name, _key_spec, _key, _write_units, _read_units), do: {:ok, nil}
-  def delete_table(_table_name), do: {:ok, nil}
+  require Logger
+
+  def create_table(table_name, _key_spec, _key, _write_units, _read_units) do
+    Logger.debug "create_table #{table_name}"
+    {:ok, nil}
+  end
+  def delete_table(table_name) do
+    Logger.debug "delete_table #{table_name}"
+    {:ok, nil}
+  end
 
   def put_item(table_name, key_spec, item) do
    put_or_replace(table_name, key_spec, item)

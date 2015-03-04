@@ -4,7 +4,7 @@ defmodule Exddb.Repo do
   defmacro __using__(opts) do
   	quote do
 
-      @adapter unquote(Keyword.fetch(opts, :adapter) || Exddb.Adapters.DynamoDB)
+      @adapter unquote(Keyword.get(opts, :adapter) || Exddb.Adapters.DynamoDB)
 
       def create_table(model, write_units \\ 1, read_units \\ 1) do
         key = model.__schema__(:key)
