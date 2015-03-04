@@ -32,7 +32,8 @@ defmodule Exddb.Model do
         Exddb.Model.__key__(@hash_key),
         Exddb.Model.__new__,
         Exddb.Model.__table_name__(@table_name),
-        Exddb.Model.__nulls__(@allow_null, @hash_key)
+        Exddb.Model.__nulls__(@allow_null, @hash_key),
+        Exddb.Model.__convert__
       ]
 
     end
@@ -104,6 +105,13 @@ defmodule Exddb.Model do
       def __schema__(:field, _), do: nil
       def __schema__(:fields), do: unquote(field_names)
     end]
+  end
+
+  def __convert__ do
+    quote do
+      def __parse__(record), do: Exddb.Type.parse(record, new)
+      def __dump__(record), do: Exddb.Type.dump(record)
+    end
   end
 
   def __table_name__(table_name) do
