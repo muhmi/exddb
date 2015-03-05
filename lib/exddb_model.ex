@@ -49,11 +49,11 @@ defmodule Exddb.Model do
     end
   end
 
-	defmacro field(name, type \\ :string, opts \\ []) do
-		quote do
-			Exddb.Model.__field__(__MODULE__, unquote(name), unquote(type), unquote(opts))
+  defmacro field(name, type \\ :string, opts \\ []) do
+    quote do
+      Exddb.Model.__field__(__MODULE__, unquote(name), unquote(type), unquote(opts))
     end
-	end
+  end
 
   def __field__(module, name, :integer, []) do
     __field__(module, name, :integer, [default: 0])
@@ -67,11 +67,11 @@ defmodule Exddb.Model do
     __field__(module, name, :float, [default: 0.0])
   end
 
-	def __field__(module, name, type, opts) do
-		Module.put_attribute(module, :struct_fields, {name, opts[:default]})
+  def __field__(module, name, type, opts) do
+    Module.put_attribute(module, :struct_fields, {name, opts[:default]})
     Module.put_attribute(module, :model_fields, {name, type})
     Module.put_attribute(module, :allow_null, {name, Keyword.get(opts, :null, true)})
-	end
+  end
 
   def __struct__(struct_fields) do
     quote do
