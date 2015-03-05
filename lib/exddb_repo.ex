@@ -15,7 +15,7 @@ defmodule Exddb.Repo do
   defcallback find(model :: Exddb.Model.t, item_id :: String.t) :: {:ok, Exddb.Model.t} | :not_found | {:error, :any}
 
   defmacro __using__(opts) do
-  	quote do
+    quote do
 
       alias Exddb.Adapter
 
@@ -92,7 +92,7 @@ defmodule Exddb.Repo do
 
       defp table_name(model), do: @table_name_prefix <> model.__schema__(:table_name)
 
-  	end
+    end
   end
 
 end
