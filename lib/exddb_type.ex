@@ -21,7 +21,7 @@ defmodule Exddb.Type do
   def parse(:boolean, {:s, v}), do: String.to_atom(v)
   def parse(:binary, {:b, v}), do: v
   def parse(:atom, {:s, v}), do: String.to_atom(v)
-  def parse(:string, {:s, v}), do: v
+  def parse(:string, {:s, v}), do: to_string(v)
 
   def dump(%{} = record) do
     module = record.__struct__

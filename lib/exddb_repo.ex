@@ -44,8 +44,8 @@ defmodule Exddb.Repo do
 
         case model.__validate__(record) do
           :ok ->
-          case @adapter.put_item(table_name(model), {key, model[key]}, Exddb.Type.dump(record), Adapter.expect_not_exists(key)) do
-            {:ok, _}   -> {:ok, record}
+          case @adapter.put_item(table_name(model), {key, record[key]}, Exddb.Type.dump(record), Adapter.expect_not_exists(record)) do
+            {:ok, _result}   -> {:ok, record}
             error           -> {:error, error}
           end
           error -> {:error, error}
@@ -53,7 +53,22 @@ defmodule Exddb.Repo do
 
       end
 
-      def update(record), do: {:error, :not_implemented}
+      def update(record) do
+ 
+        model = record.__struct__
+        key = model.__schema__(:key)
+
+        case model.__validate__(record)  do
+          :ok ->
+          case @adapter.put_item(table_name(model), {key, record[key]}, Exddb.Type.dump(record), Adapter.expect_exists(record)) do
+            {:ok, _result}   -> {:ok, record}
+            error           -> {:error, error}
+          end
+          error -> {:error, error}
+        end
+
+      end
+ 
       def delete(record), do: {:error, :not_implemented}
       def find(record_id), do: {:error, :not_implemented}
 

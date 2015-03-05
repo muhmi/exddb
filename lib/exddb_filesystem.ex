@@ -6,10 +6,12 @@ defmodule Exddb.Adapters.FS do
 
   def create_table(table_name, _key_spec, _key, _write_units, _read_units) do
     Logger.debug "create_table #{table_name}"
+    File.touch! table_file(table_name)
     {:ok, nil}
   end
   def delete_table(table_name) do
     Logger.debug "delete_table #{table_name}"
+    File.rm! table_file(table_name)
     {:ok, nil}
   end
 
@@ -84,12 +86,13 @@ defmodule Exddb.Adapters.FS do
   def encode(v), do: v
 
   def write_table(table_name, items) do
+    Logger.debug "write_table #{inspect items}"
     File.write! table_file(table_name), :jsx.encode(items, [:indent])
   end
 
-  def table_dir, do: Application.get_env(:exddb, __MODULE__, :fs_path) || Application.app_dir(:exddb, "priv")
+  def table_dir, do: Application.get_env(:exddb, :fs_path) || Application.app_dir(:exddb)
 
-  def table_file(table_name), do: "#{table_dir}/#{table_name}"
+  def table_file(table_name), do: "#{table_dir}/#{table_name}.json"
 
   def no_match?(item, key, value), do: not match?(item, key, value)
 

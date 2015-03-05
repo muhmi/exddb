@@ -2,7 +2,8 @@ defmodule ExddbTest do
   use ExUnit.Case
 
   defmodule TestRepo do
-    use Exddb.Repo, adapter: Exddb.Adapters.FS
+    use Exddb.Repo, adapter: Exddb.Adapters.FS, 
+                    table_name_prefix: "exddb_"
   end
 
   defmodule TestModel do
@@ -56,12 +57,12 @@ defmodule ExddbTest do
   end
 
   test "type conversions" do
-    [id, name, data, number] = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new)
-    assert id == {"data_id", {:s, nil}}
+    [id, name, data, number] = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new(data_id: "some_id"))
+    assert id == {"data_id", {:s, "some_id"}}
     assert name == {"name", {:s, "lol"}}
     assert data == {"data", {:b, "trololoo"}}
     assert number == {"number", {:n, 0}}
-    dump = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new)
+    dump = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new(data_id: "my_id"))
     assert dump == ExddbTest.TestModel.__dump__(ExddbTest.TestModel.__parse__(dump))
   end
 
@@ -69,4 +70,23 @@ defmodule ExddbTest do
     record = %TestModel{}
     assert record.name == "lol"
   end
+
+  test "insert" do
+    record = ExddbTest.TestModel.new data_id: 1, data: "trololoollelelre"
+    {res, _} = TestRepo.insert(record)
+    assert res == :ok
+    {res, _} = TestRepo.insert(record)
+    assert res != :ok
+  end
+
+  test "update" do
+    record = ExddbTest.TestModel.new data_id: 2, data: "trololoollelelre"
+    {res, _} = TestRepo.update(record)
+    assert res != :ok
+    {res, _} = TestRepo.insert(record)
+    assert res == :ok
+    {res, _} = TestRepo.update(record)
+    assert res == :ok
+  end
+
 end
