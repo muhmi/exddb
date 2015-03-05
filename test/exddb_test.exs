@@ -104,4 +104,14 @@ defmodule ExddbTest do
     assert res == :ok
   end
 
+  test "delete" do
+    record = TestModel.new data_id: "1", data: "trololoollelelre"
+    {res, _} = TestRepo.insert(record)
+    assert res == :ok
+    {res, _} = TestRepo.delete(record)
+    assert res == :ok
+    {res, _} = TestRepo.delete(record)
+    assert res != :ok
+  end
+
 end
