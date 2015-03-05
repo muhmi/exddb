@@ -37,11 +37,11 @@ defmodule ExddbTest do
   end
 
   test "validate" do
-    record = ExddbTest.TestModel.new
-    {res, _reason} = ExddbTest.TestModel.__validate__(record)
+    record = TestModel.new
+    {res, _reason} = TestModel.__validate__(record)
     assert res != :ok
-    record = ExddbTest.TestModel.new data_id: 1, data: "trololoollelelre"
-    assert ExddbTest.TestModel.__validate__(record) == :ok
+    record = TestModel.new data_id: 1, data: "trololoollelelre"
+    assert TestModel.__validate__(record) == :ok
   end
 
   defmodule TestCustomTableName do
@@ -61,13 +61,13 @@ defmodule ExddbTest do
   end
 
   test "type conversions" do
-    [id, name, data, number] = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new(data_id: "some_id"))
+    [id, name, data, number] = TestModel.__dump__(TestModel.new(data_id: "some_id"))
     assert id == {"data_id", "some_id"}
     assert name == {"name", "lol"}
     assert data == {"data", {:b, "trololoo"}}
     assert number == {"number", 0}
-    dump = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new(data_id: "my_id"))
-    assert dump == ExddbTest.TestModel.__dump__(ExddbTest.TestModel.__parse__(dump))
+    dump = TestModel.__dump__(TestModel.new(data_id: "my_id"))
+    assert dump == TestModel.__dump__(TestModel.__parse__(dump))
   end
 
   test "default values" do
@@ -76,7 +76,7 @@ defmodule ExddbTest do
   end
 
   test "binary" do
-    record = ExddbTest.TestModel.new data_id: "111", data: "trololoollelelre"
+    record = TestModel.new data_id: "111", data: "trololoollelelre"
     {res, _} = TestRepo.insert(record)
     assert res == :ok
     {res, read_record} = TestRepo.find(TestModel, record.data_id)
@@ -87,7 +87,7 @@ defmodule ExddbTest do
   end
 
   test "insert" do
-    record = ExddbTest.TestModel.new data_id: "1", data: "trololoollelelre"
+    record = TestModel.new data_id: "1", data: "trololoollelelre"
     {res, _} = TestRepo.insert(record)
     assert res == :ok
     {res, _} = TestRepo.insert(record)
@@ -95,7 +95,7 @@ defmodule ExddbTest do
   end
 
   test "update" do
-    record = ExddbTest.TestModel.new data_id: "2", data: "trololoollelelre"
+    record = TestModel.new data_id: "2", data: "trololoollelelre"
     {res, _} = TestRepo.update(record)
     assert res != :ok
     {res, _} = TestRepo.insert(record)

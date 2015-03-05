@@ -31,7 +31,8 @@ defmodule Exddb.Adapter do
   def expect_exists(record) do
     model = record.__struct__
     key = model.__schema__(:key)
-    case {key, record[key]} do
+    key_type = model.__schema__(:field, key)
+    case {key, Exddb.Type.dump(key_type, record[key])} do
       {{hash, range}, {hash_key, range_key}} -> [expected: [{Atom.to_string(hash), hash_key}, {Atom.to_string(range), range_key}]]
       {hash, hash_key} when is_atom(hash) -> [expected: {Atom.to_string(hash), hash_key}]
     end

@@ -69,7 +69,16 @@ defmodule Exddb.Repo do
 
       end
 
-      def delete(record), do: {:error, :not_implemented}
+      def delete(record) do
+        model = record.__struct__
+        key = model.__schema__(:key)
+        key_type = model.__schema__(:field, key)
+        encoded_id = Exddb.Type.dump(key_type, record[key])
+        case @adapter.delete_item(table_name(model), {to_string(key), encoded_id}, Adapter.expect_exists(record)) do
+          {:ok, _result}   -> {:ok, record}
+          error           ->  error
+        end
+      end
 
       def find(model, record_id) do
         key = model.__schema__(:key)
