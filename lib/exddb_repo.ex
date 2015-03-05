@@ -12,7 +12,7 @@ defmodule Exddb.Repo do
   defcallback update(record :: Exddb.Repo.t) :: {:ok, Exddb.Model.t} | {:error, :any}
   defcallback delete(record :: Exddb.Repo.t) :: {:ok, Exddb.Model.t} | {:error, :any}
 
-  defcallback find(item_id :: String.t) :: {:ok, Exddb.Model.t} | :not_found | {:error, :any}
+  defcallback find(model :: Exddb.Model.t, item_id :: String.t) :: {:ok, Exddb.Model.t} | :not_found | {:error, :any}
 
   defmacro __using__(opts) do
   	quote do
@@ -54,7 +54,7 @@ defmodule Exddb.Repo do
       end
 
       def update(record) do
- 
+
         model = record.__struct__
         key = model.__schema__(:key)
 
@@ -68,9 +68,18 @@ defmodule Exddb.Repo do
         end
 
       end
- 
+
       def delete(record), do: {:error, :not_implemented}
-      def find(record_id), do: {:error, :not_implemented}
+
+      def find(model, record_id) do
+        key = model.__schema__(:key)
+        key_type = model.__schema__(:field, key)
+        encoded_id = Exddb.Type.dump(key_type, record_id)
+        case @adapter.get_item(table_name(model), {to_string(key), encoded_id}) do
+          {:ok, []}     -> :not_found
+          {:ok, item}   -> {:ok, Exddb.Type.parse(item, model.new)}
+        end
+      end
 
       defp table_name(model), do: @table_name_prefix <> model.__schema__(:table_name)
 

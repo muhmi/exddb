@@ -17,11 +17,20 @@ defmodule Exddb.Type do
   def parse([], to_struct), do: to_struct
 
   def parse(:integer, {:n, v}), do: v
+  def parse(:integer, v) when is_binary(v), do: v
+  def parse(:integer, v) when is_number(v), do: v
   def parse(:float, {:n, v}), do: v
+  def parse(:float, v) when is_binary(v), do: v
+  def parse(:float, v) when is_number(v), do: v
   def parse(:boolean, {:s, v}), do: String.to_atom(v)
+  def parse(:boolean, v) when is_binary(v), do: String.to_atom(v)
+  def parse(:boolean, v) when is_boolean(v), do: v
   def parse(:binary, {:b, v}), do: v
+  def parse(:binary, v) when is_binary(v), do: v
+  def parse(:atom, v) when is_binary(v), do: String.to_atom(v)
   def parse(:atom, {:s, v}), do: String.to_atom(v)
-  def parse(:string, {:s, v}), do: to_string(v)
+  def parse(:string, {:s, v}), do: v
+  def parse(:string, v) when is_binary(v), do: v
 
   def dump(%{} = record) do
     module = record.__struct__
@@ -32,10 +41,11 @@ defmodule Exddb.Type do
   end
 
   def dump(:atom, v), do: Atom.to_string(v)
-  def dump(:integer, v), do: {:n, v}
-  def dump(:float, v), do: {:n, v}
-  def dump(:boolean, v), do: {:s, Atom.to_string(v)}
+  def dump(:integer, v), do: v
+  def dump(:float, v), do: v
+  def dump(:boolean, v), do: Atom.to_string(v)
   def dump(:binary, v), do: {:b, v}
-  def dump(:string, v), do: {:s, v}
+  def dump(:string, v) when is_binary(v), do: v
+  def dump(:string, v), do: to_string(v)
 
 end

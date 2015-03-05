@@ -20,6 +20,10 @@ defmodule ExddbTest do
 
   end
 
+  setup do
+    TestRepo.delete_table(TestModel)
+  end
+
   test "schema" do
     assert TestModel.__schema__(:fields) == [:data_id, :name, :data, :number]
     assert TestModel.__schema__(:field, :name) == :string
@@ -58,10 +62,10 @@ defmodule ExddbTest do
 
   test "type conversions" do
     [id, name, data, number] = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new(data_id: "some_id"))
-    assert id == {"data_id", {:s, "some_id"}}
-    assert name == {"name", {:s, "lol"}}
+    assert id == {"data_id", "some_id"}
+    assert name == {"name", "lol"}
     assert data == {"data", {:b, "trololoo"}}
-    assert number == {"number", {:n, 0}}
+    assert number == {"number", 0}
     dump = ExddbTest.TestModel.__dump__(ExddbTest.TestModel.new(data_id: "my_id"))
     assert dump == ExddbTest.TestModel.__dump__(ExddbTest.TestModel.__parse__(dump))
   end
@@ -71,8 +75,19 @@ defmodule ExddbTest do
     assert record.name == "lol"
   end
 
+  test "binary" do
+    record = ExddbTest.TestModel.new data_id: "111", data: "trololoollelelre"
+    {res, _} = TestRepo.insert(record)
+    assert res == :ok
+    {res, read_record} = TestRepo.find(TestModel, record.data_id)
+    assert res == :ok
+    assert record.data == read_record.data
+    assert record.data_id == read_record.data_id
+    assert record.number == read_record.number
+  end
+
   test "insert" do
-    record = ExddbTest.TestModel.new data_id: 1, data: "trololoollelelre"
+    record = ExddbTest.TestModel.new data_id: "1", data: "trololoollelelre"
     {res, _} = TestRepo.insert(record)
     assert res == :ok
     {res, _} = TestRepo.insert(record)
@@ -80,7 +95,7 @@ defmodule ExddbTest do
   end
 
   test "update" do
-    record = ExddbTest.TestModel.new data_id: 2, data: "trololoollelelre"
+    record = ExddbTest.TestModel.new data_id: "2", data: "trololoollelelre"
     {res, _} = TestRepo.update(record)
     assert res != :ok
     {res, _} = TestRepo.insert(record)
