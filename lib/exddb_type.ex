@@ -34,10 +34,7 @@ defmodule Exddb.Type do
 
   def dump(%{} = record) do
     module = record.__struct__
-    for f <- module.__schema__(:fields) do
-      value = record[f]
-      {Atom.to_string(f), dump(module.__schema__(:field, f), value)}
-    end
+    for f <- module.__schema__(:fields), do: {Atom.to_string(f), dump(module.__schema__(:field, f), record[f])}
   end
 
   def dump(:atom, v), do: Atom.to_string(v)

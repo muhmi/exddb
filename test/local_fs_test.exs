@@ -16,6 +16,7 @@ defmodule LocalRepoTest do
       field :name, :string, default: "lol"
       field :data, :binary, default: "trololoo", null: false
       field :number, :integer
+      field :number2, :float
     end
 
   end
@@ -25,11 +26,13 @@ defmodule LocalRepoTest do
   #end
 
   test "schema" do
-    assert TestModel.__schema__(:fields) == [:data_id, :name, :data, :number]
+    assert TestModel.__schema__(:fields) == [:data_id, :name, :data, :number, :number2]
     assert TestModel.__schema__(:field, :name) == :string
     assert TestModel.__schema__(:field, :data) == :binary
     assert TestModel.__schema__(:key) == :data_id
     assert TestModel.__schema__(:field, :data_id) == :string
+    assert TestModel.__schema__(:field, :number2) == :float
+    assert TestModel.__schema__(:field, :number) == :integer
     assert TestModel.__schema__(:table_name) == "test_LocalRepoTest.TestModel"
     assert TestModel.__schema__(:null, :data_id) == false
     assert TestModel.__schema__(:null, :data) == false
@@ -61,7 +64,7 @@ defmodule LocalRepoTest do
   end
 
   test "type conversions" do
-    [id, name, data, number] = TestModel.__dump__(TestModel.new(data_id: "some_id"))
+    [id, name, data, number | _rest] = TestModel.__dump__(TestModel.new(data_id: "some_id"))
     assert id == {"data_id", "some_id"}
     assert name == {"name", "lol"}
     assert data == {"data", {:b, "trololoo"}}

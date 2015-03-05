@@ -17,6 +17,7 @@ defmodule RemoteRepoTest do
       field :data, :binary, default: "trololoo", null: false
       field :number, :integer
       field :truth, :boolean
+      field :stuff, :float, default: 3.14159265359
     end
   end
 
@@ -29,7 +30,8 @@ defmodule RemoteRepoTest do
   end
 
   test "crud" do
-    record = TestModel.new data_id: "112121", data: "trololoollelelre"
+    now = :calendar.datetime_to_gregorian_seconds(:calendar.universal_time)
+    record = TestModel.new data_id: to_string(now), data: "trololoollelelre", truth: true
     {res, _} = RemoteRepo.insert(record)
     assert res == :ok
     {res, _} = RemoteRepo.insert(record)
@@ -37,6 +39,7 @@ defmodule RemoteRepoTest do
 
     record = put_in(record.number, 12)
     record = put_in(record.data, "trolollerskaters")
+    record = put_in(record.stuff, 3.14159265359/2)
 
     {res, _} = RemoteRepo.update(record)
     assert res == :ok
@@ -48,6 +51,7 @@ defmodule RemoteRepoTest do
     assert read_record.data == record.data
     assert read_record.number == record.number
     assert read_record.truth == record.truth
+    assert read_record.stuff == record.stuff
 
     {res, _} = RemoteRepo.delete(record)
     assert res == :ok

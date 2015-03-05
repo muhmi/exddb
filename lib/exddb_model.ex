@@ -64,7 +64,7 @@ defmodule Exddb.Model do
   end
 
   def __field__(module, name, :float, []) do
-    __field__(module, name, :boolean, [default: 0.0])
+    __field__(module, name, :float, [default: 0.0])
   end
 
 	def __field__(module, name, type, opts) do
