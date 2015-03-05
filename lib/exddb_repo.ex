@@ -46,7 +46,7 @@ defmodule Exddb.Repo do
           value = Map.get(record, key)
           case @adapter.put_item(table_name(model), {key, value}, Exddb.Type.dump(record), Adapter.expect_not_exists(record)) do
             {:ok, []} -> {:ok, record}
-            error -> {:error, error}
+            {:error, error} -> {:error, error}
           end
           error -> {:error, error}
         end
@@ -62,7 +62,7 @@ defmodule Exddb.Repo do
           value = Map.get(record, key)
           case @adapter.put_item(table_name(model), {key, value}, Exddb.Type.dump(record), Adapter.expect_exists(record)) do
             {:ok, []} ->  {:ok, record}
-            error -> {:error, error}
+            {:error, error} -> {:error, error}
           end
           error -> {:error, error}
         end
@@ -76,8 +76,10 @@ defmodule Exddb.Repo do
         value = Map.get(record, key)
         encoded_id = Exddb.Type.dump(key_type, value)
         case @adapter.delete_item(table_name(model), {to_string(key), encoded_id}, Adapter.expect_exists(record)) do
+          {:ok, nil} -> {:ok, record}
           {:ok, []} -> {:ok, record}
-          error ->  error
+          {:error, error} ->  {:error, error}
+          error -> {:error, error}
         end
       end
 
