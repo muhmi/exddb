@@ -1,4 +1,4 @@
-defmodule ExddbTest do
+defmodule LocalRepoTest do
   use ExUnit.Case
 
   defmodule LocalRepo do
@@ -30,7 +30,7 @@ defmodule ExddbTest do
     assert TestModel.__schema__(:field, :data) == :binary
     assert TestModel.__schema__(:key) == :data_id
     assert TestModel.__schema__(:field, :data_id) == :string
-    assert TestModel.__schema__(:table_name) == "test_ExddbTest.TestModel"
+    assert TestModel.__schema__(:table_name) == "test_LocalRepoTest.TestModel"
     assert TestModel.__schema__(:null, :data_id) == false
     assert TestModel.__schema__(:null, :data) == false
     assert TestModel.__schema__(:null, :name) == true
