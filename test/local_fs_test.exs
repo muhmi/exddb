@@ -1,7 +1,7 @@
 defmodule ExddbTest do
   use ExUnit.Case
 
-  defmodule TestRepo do
+  defmodule LocalRepo do
     use Exddb.Repo, adapter: Exddb.Adapters.FS, 
                     table_name_prefix: "exddb_"
   end
@@ -20,9 +20,9 @@ defmodule ExddbTest do
 
   end
 
-  setup do
-    TestRepo.delete_table(TestModel)
-  end
+  #setup do
+  #  LocalRepo.delete_table(TestModel)
+  #end
 
   test "schema" do
     assert TestModel.__schema__(:fields) == [:data_id, :name, :data, :number]
@@ -52,8 +52,8 @@ defmodule ExddbTest do
   end
 
   test "create/drop table" do
-    assert TestRepo.create_table(TestModel) == :ok
-    assert TestRepo.delete_table(TestModel) == :ok
+    assert LocalRepo.create_table(TestModel) == :ok
+    assert LocalRepo.delete_table(TestModel) == :ok
   end
 
   test "schema custom table_name" do
@@ -77,9 +77,9 @@ defmodule ExddbTest do
 
   test "binary" do
     record = TestModel.new data_id: "111", data: "trololoollelelre"
-    {res, _} = TestRepo.insert(record)
+    {res, _} = LocalRepo.insert(record)
     assert res == :ok
-    {res, read_record} = TestRepo.find(TestModel, record.data_id)
+    {res, read_record} = LocalRepo.find(TestModel, record.data_id)
     assert res == :ok
     assert record.data == read_record.data
     assert record.data_id == read_record.data_id
@@ -87,30 +87,32 @@ defmodule ExddbTest do
   end
 
   test "insert" do
-    record = TestModel.new data_id: "1", data: "trololoollelelre"
-    {res, _} = TestRepo.insert(record)
+    record = TestModel.new data_id: "112121", data: "trololoollelelre"
+    {res, _} = LocalRepo.insert(record)
     assert res == :ok
-    {res, _} = TestRepo.insert(record)
+    {res, _} = LocalRepo.insert(record)
     assert res != :ok
+    {res, _} = LocalRepo.delete(record)
+    assert res == :ok
   end
 
   test "update" do
     record = TestModel.new data_id: "2", data: "trololoollelelre"
-    {res, _} = TestRepo.update(record)
+    {res, _} = LocalRepo.update(record)
     assert res != :ok
-    {res, _} = TestRepo.insert(record)
+    {res, _} = LocalRepo.insert(record)
     assert res == :ok
-    {res, _} = TestRepo.update(record)
+    {res, _} = LocalRepo.update(record)
     assert res == :ok
   end
 
   test "delete" do
     record = TestModel.new data_id: "1", data: "trololoollelelre"
-    {res, _} = TestRepo.insert(record)
+    {res, _} = LocalRepo.insert(record)
     assert res == :ok
-    {res, _} = TestRepo.delete(record)
+    {res, _} = LocalRepo.delete(record)
     assert res == :ok
-    {res, _} = TestRepo.delete(record)
+    {res, _} = LocalRepo.delete(record)
     assert res != :ok
   end
 
