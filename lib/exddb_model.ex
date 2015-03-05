@@ -23,7 +23,6 @@ defmodule Exddb.Model do
       Module.register_attribute(__MODULE__, :allow_null, accumulate: true)
 
       @behaviour Exddb.Model
-      @derive [Access]
 
       try do
         import Exddb.Model

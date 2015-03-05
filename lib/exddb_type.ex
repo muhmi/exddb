@@ -11,7 +11,7 @@ defmodule Exddb.Type do
     module = to_struct.__struct__
     key = String.to_atom(key)
     value = parse(module.__schema__(:field, key), value)
-    to_struct = put_in(to_struct, [key], value)
+    to_struct = Map.put(to_struct, key, value)
     parse(rest, to_struct)
   end
   def parse([], to_struct), do: to_struct
@@ -34,7 +34,7 @@ defmodule Exddb.Type do
 
   def dump(%{} = record) do
     module = record.__struct__
-    for f <- module.__schema__(:fields), do: {Atom.to_string(f), dump(module.__schema__(:field, f), record[f])}
+    for f <- module.__schema__(:fields), do: {Atom.to_string(f), dump(module.__schema__(:field, f), Map.get(record, f))}
   end
 
   def dump(:atom, v), do: Atom.to_string(v)
