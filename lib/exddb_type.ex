@@ -34,7 +34,11 @@ defmodule Exddb.Type do
 
   def dump(%{} = record) do
     module = record.__struct__
-    for f <- module.__schema__(:fields), do: {Atom.to_string(f), dump(module.__schema__(:field, f), Map.get(record, f))}
+    for f <- module.__schema__(:fields) do
+      if Map.get(record, f) != nil do 
+        {Atom.to_string(f), dump(module.__schema__(:field, f), Map.get(record, f))}
+      end
+    end |> Enum.filter(fn(kv) -> kv != nil end)
   end
 
   def dump(:atom, v), do: Atom.to_string(v)

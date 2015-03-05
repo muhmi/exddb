@@ -13,8 +13,8 @@ defmodule RemoteRepoTest do
     @table_name "testmodel"
     model do
       field :data_id, :string
-      field :name, :string, default: "lol"
-      field :data, :binary, default: "trololoo", null: false
+      field :name, :string
+      field :data, :binary
       field :number, :integer
       field :truth, :boolean
       field :stuff, :float, default: 3.14159265359

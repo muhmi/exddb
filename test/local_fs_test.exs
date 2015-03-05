@@ -25,6 +25,12 @@ defmodule LocalRepoTest do
   #  LocalRepo.delete_table(TestModel)
   #end
 
+
+  test "dump does not include nulls" do
+    dump = TestModel.__dump__(TestModel.new)
+    assert dump == [{"name", "lol"}, {"data", {:b, "trololoo"}}, {"number", 0}, {"number2", 0.0}]
+  end
+
   test "schema" do
     assert TestModel.__schema__(:fields) == [:data_id, :name, :data, :number, :number2]
     assert TestModel.__schema__(:field, :name) == :string
