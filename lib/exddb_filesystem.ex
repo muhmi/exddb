@@ -2,16 +2,12 @@ defmodule Exddb.Adapters.FS do
 
   @behaviour Exddb.Adapter
 
-  require Logger
-
   def create_table(table_name, _key_spec, _key, _write_units, _read_units) do
-    Logger.debug "create_table #{table_name}"
     File.touch! table_file(table_name)
     {:ok, nil}
   end
 
   def delete_table(table_name) do
-    Logger.debug "delete_table #{table_name}"
     if File.exists?(table_file(table_name)), do: File.rm!(table_file(table_name))
     {:ok, nil}
   end
@@ -62,7 +58,6 @@ defmodule Exddb.Adapters.FS do
 
   def get_item(table_name, {id_key, id_value}) do
     items = read_table(table_name)
-    Logger.debug("try find #{inspect id_key} = #{inspect id_value}")
     item = Enum.find(items, &match?(&1, id_key, id_value))
     if item != nil do
       item = item |> Enum.map(fn({k, v}) -> {k, decode(v)} end)
@@ -75,9 +70,7 @@ defmodule Exddb.Adapters.FS do
   def read_table(table_name) do
     table_path = table_file(table_name)
     if File.exists?(table_path) do
-      items = table_path |> File.read! |> :jsx.decode
-      Logger.debug ("read_table #{inspect items}")
-      items
+      table_path |> File.read! |> :jsx.decode
     else
       []
     end
@@ -90,7 +83,7 @@ defmodule Exddb.Adapters.FS do
   def encode(v), do: v
 
   def write_table(table_name, items) do
-    Logger.debug "write_table #{inspect items}"
+
     File.write! table_file(table_name), :jsx.encode(items, [:indent])
   end
 
