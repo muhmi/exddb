@@ -33,8 +33,8 @@ defmodule Exddb.Repo do
 
       def delete_table(model) do
         case @adapter.delete_table(table_name(model)) do
-          {:ok, _result}   -> :ok
-          error           -> error
+          {:ok, _result} -> :ok
+          error -> error
         end
       end
 
@@ -45,8 +45,8 @@ defmodule Exddb.Repo do
         case model.__validate__(record) do
           :ok ->
           case @adapter.put_item(table_name(model), {key, record[key]}, Exddb.Type.dump(record), Adapter.expect_not_exists(record)) do
-            {:ok, _result}   -> {:ok, record}
-            error           -> {:error, error}
+            {:ok, []} -> {:ok, record}
+            error -> {:error, error}
           end
           error -> {:error, error}
         end
@@ -61,8 +61,8 @@ defmodule Exddb.Repo do
         case model.__validate__(record)  do
           :ok ->
           case @adapter.put_item(table_name(model), {key, record[key]}, Exddb.Type.dump(record), Adapter.expect_exists(record)) do
-            {:ok, _result}   -> {:ok, record}
-            error           -> {:error, error}
+            {:ok, []} ->  {:ok, record}
+            error -> {:error, error}
           end
           error -> {:error, error}
         end
@@ -75,8 +75,8 @@ defmodule Exddb.Repo do
         key_type = model.__schema__(:field, key)
         encoded_id = Exddb.Type.dump(key_type, record[key])
         case @adapter.delete_item(table_name(model), {to_string(key), encoded_id}, Adapter.expect_exists(record)) do
-          {:ok, _result}   -> {:ok, record}
-          error           ->  error
+          {:ok, []} -> {:ok, record}
+          error ->  error
         end
       end
 
@@ -85,8 +85,8 @@ defmodule Exddb.Repo do
         key_type = model.__schema__(:field, key)
         encoded_id = Exddb.Type.dump(key_type, record_id)
         case @adapter.get_item(table_name(model), {to_string(key), encoded_id}) do
-          {:ok, []}     -> :not_found
-          {:ok, item}   -> {:ok, Exddb.Type.parse(item, model.new)}
+          {:ok, []} -> :not_found
+          {:ok, item} -> {:ok, Exddb.Type.parse(item, model.new)}
         end
       end
 

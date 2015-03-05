@@ -45,7 +45,7 @@ defmodule Exddb.Adapters.FS do
     item = item |> Enum.map(fn({k, v}) -> {k, encode(v)} end)
     items = [item | items]
     write_table(table_name, items)
-    {:ok, item}
+    {:ok, []}
   end
 
   def delete_item(table_name, {id_key, id_value}, _expect_exists) do
