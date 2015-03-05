@@ -1,24 +1,20 @@
 Exddb
 =====
 
-Simple and lightweidht object mapper for DynamoDB.
+Simple and lightweight object mapper for DynamoDB and Elixir
 
 Supports:
-
 - Basic CRUD operations and find
 - Can use DynamoDB or local file system for storing data
 
-TODO
-
+TODO:
 - Range keys
-
 - Query support
-
 - Support for using custom constraints insert/update/delete
   http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ExpectedAttributeValue.html 
 
 
-Usage
+Defining your data model
 -------------------------
 
 ```elixir
@@ -38,18 +34,19 @@ Usage
   end
 ```
 
+Setup a repository
+-------------------------
 All database operations are done through a repository module.
-
-You need to build one for your self:
-
 ```elixir
   defmodule RemoteRepo do
     use Exddb.Repo, adapter: Exddb.Adapters.DynamoDB,
                     table_name_prefix: "exddb_"
   end
 ```
-
+Using the repository:
 ```elixir
-  record = TestModel.new data_id: to_string(now), data: "trololoollelelre", truth: true
+  record = TestModel.new data_id: to_string(now), data: "something important", truth: true
   {:ok, _record} = RemoteRepo.insert(record)
 ```
+
+Note: You can define multiple repositories in your app.
