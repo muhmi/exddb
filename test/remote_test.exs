@@ -47,10 +47,10 @@ defmodule RemoteRepoTest do
     {res, _} = RemoteRepo.update(record)
     assert res == :ok
 
-    {res, _} = RemoteRepo.update(record, expect(exists: record and record.name == "a fantastic name"))
+    {res, _} = RemoteRepo.update(record, ConditionalOperation.expect(exists: record and record.name == "a fantastic name"))
     assert res == :ok
 
-    {res, _} = RemoteRepo.update(record, expect(exists: record and record.name == "some other name"))
+    {res, _} = RemoteRepo.update(record, ConditionalOperation.expect(exists: record and record.name == "some other name"))
     assert res != :ok
 
 

@@ -2,7 +2,8 @@ defmodule Exddb.ConditionalOperation do
 
   defmacro __using__(_opts) do
     quote do
-      import Exddb.ConditionalOperation, only: [expect: 1]
+      require Exddb.ConditionalOperation
+      alias Exddb.ConditionalOperation
     end
   end
 
