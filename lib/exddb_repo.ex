@@ -41,11 +41,11 @@ defmodule Exddb.Repo do
         end
       end
 
-      def insert(record), do: insert(@adapter, table_name(record), record)
+      def insert(record, conditional_op \\ nil), do: insert(@adapter, table_name(record), record, conditional_op)
 
-      def update(record, expect \\ nil), do: update(@adapter, table_name(record), record, expect)
+      def update(record, conditional_op \\ nil), do: update(@adapter, table_name(record), record, conditional_op)
 
-      def delete(record), do: delete(@adapter, table_name(record), record)
+      def delete(record, conditional_op \\ nil), do: delete(@adapter, table_name(record), record, conditional_op)
 
       def find(model, record_id), do: find(@adapter, table_name(model), model, record_id)
 
@@ -56,12 +56,13 @@ defmodule Exddb.Repo do
   end
 
   @spec insert(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
-  def insert(adapter, table_name, record) do
+  def insert(adapter, table_name, record, conditional_op \\ nil) do
+    if conditional_op == nil, do: conditional_op = expect(not_exist: record)
     {model, key} = metadata(record)
     case model.__validate__(record) do
       :ok ->
       value = Map.get(record, key)
-      case adapter.put_item(table_name, {key, value}, Exddb.Type.dump(record), expect(not_exist: record)) do
+      case adapter.put_item(table_name, {key, value}, Exddb.Type.dump(record), conditional_op) do
         {:ok, []} -> {:ok, record}
         {:error, error} -> {:error, error}
       end
@@ -70,13 +71,13 @@ defmodule Exddb.Repo do
   end
 
   @spec update(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
-  def update(adapter, table_name, record, expect \\ nil) do
-      if expect == nil, do: expect = expect(exist: record)
+  def update(adapter, table_name, record, conditional_op \\ nil) do
+      if conditional_op == nil, do: conditional_op = expect(exist: record)
       {model, key} = metadata(record)
       case model.__validate__(record)  do
         :ok ->
         value = Map.get(record, key)
-        case adapter.put_item(table_name, {key, value}, Exddb.Type.dump(record), expect) do
+        case adapter.put_item(table_name, {key, value}, Exddb.Type.dump(record), conditional_op) do
           {:ok, []} ->  {:ok, record}
           {:error, error} -> {:error, error}
         end
@@ -85,12 +86,13 @@ defmodule Exddb.Repo do
   end
 
   @spec delete(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
-  def delete(adapter, table_name, record) do
+  def delete(adapter, table_name, record, conditional_op \\ nil) do
+    if conditional_op == nil, do: conditional_op = expect(exist: record)
     {model, key} = metadata(record)
     key_type = model.__schema__(:field, key)
     value = Map.get(record, key)
     encoded_id = Exddb.Type.dump(key_type, value)
-    case adapter.delete_item(table_name, {to_string(key), encoded_id}, expect(exist: record)) do
+    case adapter.delete_item(table_name, {to_string(key), encoded_id}, conditional_op) do
       {:ok, nil} -> {:ok, record}
       {:ok, []} -> {:ok, record}
       {:error, error} ->  {:error, error}
