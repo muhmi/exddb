@@ -3,15 +3,14 @@ Exddb
 
 Simple and lightweight object mapper for DynamoDB and Elixir
 
-Supports:
+Features:
 - Basic CRUD operations and find
 - Can use DynamoDB or local file system for storing data
+- Conditional operations
 
 TODO:
 - Range keys
-- Query support
-- Support for using custom constraints insert/update/delete
-  http://docs.aws.amazon.com/amazondynamodb/latest/APIReference/API_ExpectedAttributeValue.html 
+- Query support =)
 
 
 Defining your data model
@@ -50,3 +49,27 @@ record = TestModel.new data_id: to_string(now), data: "something important", tru
 ```
 
 Note: You can define multiple repositories in your app.
+
+Conditional operations
+-------------------------
+
+Currently only a few simple condiotional operations are supported with insert, update and delete.
+
+```elixir
+record = TestModel.new data_id: to_string(now), data: "something important", truth: true
+{:ok, _record} = RemoteRepo.insert(record)
+
+# Is equivalent to:
+
+record = TestModel.new data_id: to_string(now), data: "something important", truth: true
+{:ok, _record} = RemoteRepo.insert(record, ConditionalOperation.expect(not_exist: record))
+
+# -> Ceates a conditional operation that checks that there is no record with the key data_id you are trying to insert
+
+# Another example:
+
+iex> RemoteRepo.update(record, ConditionalOperation.expect(exist: record and record.name == "some other name"))
+{:error, {"ConditionalCheckFailedException", "The conditional request failed"}}
+
+
+```
