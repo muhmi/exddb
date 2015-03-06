@@ -22,6 +22,12 @@ defmodule Exddb.Expect do
     end
   end
 
+  def build([exists: {:and, _, [{record, _, _}, {:==, _, [{{:., _, [{_, _, _}, field]}, _, []}, expect_value]}]}], env) do
+    quote do
+      Exddb.Expect.expect_exists(unquote(Macro.var(record, env.context)), [{unquote(field), unquote(expect_value)}])
+    end
+  end
+
   def expect_not_exists(record) do
     model = record.__struct__
     key_type = model.__schema__(:key)
@@ -41,14 +47,17 @@ defmodule Exddb.Expect do
       {hash, hash_key} when is_atom(hash) -> [expected: {Atom.to_string(hash), hash_key}]
     end
   end
-
-
-#  def parse([exists: {:==, [line: 31], [:data_id, {{:., [line: 31], [{:item, [line: 31], nil}, :data_id]}, [line: 31], []}]}]), do: escape(Macro.escape(expr))
-
-#  IO.puts(inspect(unquote(Macro.escape(expr))))                     [exists: {:==, [line: 31], [:data_id, {{:., [line: 31], [{:item, [line: 31], nil}, :data_id]}, [line: 31], []}]}]
-#  IO.puts(inspect(unquote(Macro.expand(expr, __CALLER__))))         [exists: false]
-#  IO.puts(inspect(unquote(__CALLER__.aliases)))                     [{TestModel, Exddb.Expect.TestModel}]
-#  IO.puts(inspect(unquote(__CALLER__.vars)))                        [item: nil]
-#  IO.puts(inspect(unquote(Macro.var(:item, __CALLER__.context))))   %Exddb.Expect.TestModel{data: nil, data_id: 10, name: nil, number: 0, stuff: 3.14159265359, truth: false}
+  def expect_exists(record, kv_list) when is_list(kv_list) do
+    [expected: statement] = expect_exists(record)
+    if not is_list(statement), do: statement = [statement]
+    expect_exists(record, kv_list, statement)
+  end
+  def expect_exists(record, [{key, value}|rest], statement) do
+    model = record.__struct__
+    enncoded = model.__schema__(:field, key) |> Exddb.Type.dump(value)
+    statement = [{Atom.to_string(key), enncoded}|statement]
+    expect_exists(record, rest, statement)
+  end
+  def expect_exists(record, [], statement), do: [expected: Enum.reverse(statement)]
 
 end

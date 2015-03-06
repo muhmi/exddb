@@ -14,11 +14,12 @@ defmodule ConditionalOpTest do
      end
   end
 
-  def test do
-    item = TestModel.new data_id: 10
-    assert expect(exist: item) == [expected: {"data_id", 10}]
-    assert expect(not_exist: item) == [expected: {"data_id", false}]
-  end
+  test "expect" do
+    item = TestModel.new data_id: "10"
+    assert [expected: {"data_id", "10"}] == expect(exist: item)
+    assert [expected: {"data_id", false}] == expect(not_exist: item)
 
+    assert [expected: [{"data_id", "10"}, {"name", "some_name"}]] == expect(exists: item and item.name == "some_name")
+  end
 
 end
