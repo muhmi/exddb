@@ -2,7 +2,7 @@
 defmodule Exddb.Repo do
 
   use Behaviour
-  use Exddb.Expect
+  use Exddb.ConditionalOperation
 
   @type t :: module
 

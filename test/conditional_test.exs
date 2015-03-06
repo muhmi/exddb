@@ -1,7 +1,7 @@
 defmodule ConditionalOpTest do
   use ExUnit.Case
 
-  use Exddb.Expect
+  use Exddb.ConditionalOperation
 
   defmodule TestModel do
     use Exddb.Model

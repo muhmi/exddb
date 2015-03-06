@@ -1,8 +1,8 @@
-defmodule Exddb.Expect do
+defmodule Exddb.ConditionalOperation do
 
-  defmacro __using__(opts) do
+  defmacro __using__(_opts) do
     quote do
-      import Exddb.Expect, only: [expect: 1]
+      import Exddb.ConditionalOperation, only: [expect: 1]
     end
   end
 
@@ -12,19 +12,19 @@ defmodule Exddb.Expect do
 
   def build([exist: {var, _, _}], env) do
     quote do
-      Exddb.Expect.expect_exists(unquote(Macro.var(var, env.context)))
+      Exddb.ConditionalOperation.expect_exists(unquote(Macro.var(var, env.context)))
     end
   end
 
   def build([not_exist: {var, _, _}], env) do
     quote do
-      Exddb.Expect.expect_not_exists(unquote(Macro.var(var, env.context)))
+      Exddb.ConditionalOperation.expect_not_exists(unquote(Macro.var(var, env.context)))
     end
   end
 
   def build([exists: {:and, _, [{record, _, _}, {:==, _, [{{:., _, [{_, _, _}, field]}, _, []}, expect_value]}]}], env) do
     quote do
-      Exddb.Expect.expect_exists(unquote(Macro.var(record, env.context)), [{unquote(field), unquote(expect_value)}])
+      Exddb.ConditionalOperation.expect_exists(unquote(Macro.var(record, env.context)), [{unquote(field), unquote(expect_value)}])
     end
   end
 
@@ -58,6 +58,6 @@ defmodule Exddb.Expect do
     statement = [{Atom.to_string(key), enncoded}|statement]
     expect_exists(record, rest, statement)
   end
-  def expect_exists(record, [], statement), do: [expected: Enum.reverse(statement)]
+  def expect_exists(_record, [], statement), do: [expected: Enum.reverse(statement)]
 
 end

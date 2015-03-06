@@ -1,7 +1,7 @@
 defmodule RemoteRepoTest do
   use ExUnit.Case
 
-  use Exddb.Expect
+  use Exddb.ConditionalOperation
 
   defmodule RemoteRepo do
     use Exddb.Repo, adapter: Exddb.Adapters.DynamoDB,
