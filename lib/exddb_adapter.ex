@@ -17,26 +17,5 @@ defmodule Exddb.Adapter do
   
   defcallback get_item(table_name :: String.t, key_spec :: term) :: term
 
-  # Helpers
-
-  def expect_not_exists(record) do
-    model = record.__struct__
-    key_type = model.__schema__(:key)
-    case key_type do
-      {hash, range} -> [expected: [{Atom.to_string(hash), false}, {Atom.to_string(range), false}]]
-      hash -> [expected: {Atom.to_string(hash), false}]
-    end
-  end
-
-  def expect_exists(record) do
-    model = record.__struct__
-    key = model.__schema__(:key)
-    key_type = model.__schema__(:field, key)
-    value = Map.get(record, key)
-    case {key, Exddb.Type.dump(key_type, value)} do
-      {{hash, range}, {hash_key, range_key}} -> [expected: [{Atom.to_string(hash), hash_key}, {Atom.to_string(range), range_key}]]
-      {hash, hash_key} when is_atom(hash) -> [expected: {Atom.to_string(hash), hash_key}]
-    end
-  end
 
 end

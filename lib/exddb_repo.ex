@@ -2,15 +2,16 @@
 defmodule Exddb.Repo do
 
   use Behaviour
+  use Exddb.Expect
 
   @type t :: module
 
   defcallback create_table(model :: Exddb.Repo.t, write_units :: integer, read_units :: integer) :: :ok | :any
   defcallback delete_table(model :: Exddb.Repo.t) :: :ok | :any
 
-  defcallback insert(record :: Exddb.Repo.t) :: {:ok, Exddb.Model.t} | {:error, :any}
-  defcallback update(record :: Exddb.Repo.t) :: {:ok, Exddb.Model.t} | {:error, :any}
-  defcallback delete(record :: Exddb.Repo.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  defcallback insert(record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  defcallback update(record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  defcallback delete(record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
 
   defcallback find(model :: Exddb.Model.t, item_id :: String.t) :: {:ok, Exddb.Model.t} | :not_found | {:error, :any}
 
@@ -18,6 +19,8 @@ defmodule Exddb.Repo do
     quote do
 
       alias Exddb.Adapter
+
+      import Exddb.Repo
 
       @behaviour Exddb.Repo
       @table_name_prefix unquote(Keyword.get(opts, :table_name_prefix)) || ""
@@ -38,64 +41,77 @@ defmodule Exddb.Repo do
         end
       end
 
-      def insert(record) do
-        model = record.__struct__
-        key = model.__schema__(:key)
-        case model.__validate__(record) do
-          :ok ->
-          value = Map.get(record, key)
-          case @adapter.put_item(table_name(model), {key, value}, Exddb.Type.dump(record), Adapter.expect_not_exists(record)) do
-            {:ok, []} -> {:ok, record}
-            {:error, error} -> {:error, error}
-          end
-          error -> {:error, error}
-        end
-      end
+      def insert(record), do: insert(@adapter, table_name(record), record)
 
-      def update(record) do
+      def update(record), do: update(@adapter, table_name(record), record)
 
-        model = record.__struct__
-        key = model.__schema__(:key)
+      def delete(record), do: delete(@adapter, table_name(record), record)
 
-        case model.__validate__(record)  do
-          :ok ->
-          value = Map.get(record, key)
-          case @adapter.put_item(table_name(model), {key, value}, Exddb.Type.dump(record), Adapter.expect_exists(record)) do
-            {:ok, []} ->  {:ok, record}
-            {:error, error} -> {:error, error}
-          end
-          error -> {:error, error}
-        end
+      def find(model, record_id), do: find(@adapter, table_name(model), model, record_id)
 
-      end
-
-      def delete(record) do
-        model = record.__struct__
-        key = model.__schema__(:key)
-        key_type = model.__schema__(:field, key)
-        value = Map.get(record, key)
-        encoded_id = Exddb.Type.dump(key_type, value)
-        case @adapter.delete_item(table_name(model), {to_string(key), encoded_id}, Adapter.expect_exists(record)) do
-          {:ok, nil} -> {:ok, record}
-          {:ok, []} -> {:ok, record}
-          {:error, error} ->  {:error, error}
-          error -> {:error, error}
-        end
-      end
-
-      def find(model, record_id) do
-        key = model.__schema__(:key)
-        key_type = model.__schema__(:field, key)
-        encoded_id = Exddb.Type.dump(key_type, record_id)
-        case @adapter.get_item(table_name(model), {to_string(key), encoded_id}) do
-          {:ok, []} -> :not_found
-          {:ok, item} -> {:ok, Exddb.Type.parse(item, model.new)}
-        end
-      end
-
+      defp table_name(%{} = record), do: table_name(record.__struct__)
       defp table_name(model), do: @table_name_prefix <> model.__schema__(:table_name)
 
     end
+  end
+
+  @spec insert(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  def insert(adapter, table_name, record) do
+    {model, key} = metadata(record)
+    case model.__validate__(record) do
+      :ok ->
+      value = Map.get(record, key)
+      case adapter.put_item(table_name, {key, value}, Exddb.Type.dump(record), expect(not_exist: record)) do
+        {:ok, []} -> {:ok, record}
+        {:error, error} -> {:error, error}
+      end
+      error -> {:error, error}
+    end
+  end
+
+  @spec update(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  def update(adapter, table_name, record) do
+      {model, key} = metadata(record)
+      case model.__validate__(record)  do
+        :ok ->
+        value = Map.get(record, key)
+        case adapter.put_item(table_name, {key, value}, Exddb.Type.dump(record), expect(exist: record)) do
+          {:ok, []} ->  {:ok, record}
+          {:error, error} -> {:error, error}
+        end
+        error -> {:error, error}
+      end
+  end
+
+  @spec delete(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  def delete(adapter, table_name, record) do
+    {model, key} = metadata(record)
+    key_type = model.__schema__(:field, key)
+    value = Map.get(record, key)
+    encoded_id = Exddb.Type.dump(key_type, value)
+    case adapter.delete_item(table_name, {to_string(key), encoded_id}, expect(exist: record)) do
+      {:ok, nil} -> {:ok, record}
+      {:ok, []} -> {:ok, record}
+      {:error, error} ->  {:error, error}
+      error -> {:error, error}
+    end
+  end
+
+  @spec find(adapter :: Exddb.Adapter.t, table_name :: String.t, model :: Exddb.Model.t, record_id :: :any) :: {:ok, Exddb.Model.t} | {:error, :any}
+  def find(adapter, table_name, model, record_id) do
+    key = model.__schema__(:key)
+    key_type = model.__schema__(:field, key)
+    encoded_id = Exddb.Type.dump(key_type, record_id)
+    case adapter.get_item(table_name, {to_string(key), encoded_id}) do
+      {:ok, []} -> :not_found
+      {:ok, item} -> {:ok, Exddb.Type.parse(item, model.new)}
+    end
+  end
+
+  defp metadata(record) do
+    model = record.__struct__
+    key = model.__schema__(:key)
+    {model, key}
   end
 
 end

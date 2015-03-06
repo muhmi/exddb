@@ -53,7 +53,8 @@ defmodule RemoteRepoTest do
     assert read_record.truth == record.truth
     assert read_record.stuff == record.stuff
 
-    {res, _} = RemoteRepo.delete(record)
+    {res, error} = RemoteRepo.delete(record)
+    if res != :ok, do: IO.puts(inspect(error))
     assert res == :ok
 
     {res, _} = RemoteRepo.delete(record)
