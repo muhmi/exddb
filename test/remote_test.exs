@@ -1,6 +1,8 @@
 defmodule RemoteRepoTest do
   use ExUnit.Case
 
+  use Exddb.Expect
+
   defmodule RemoteRepo do
     use Exddb.Repo, adapter: Exddb.Adapters.DynamoDB,
                     table_name_prefix: "exddb_"
@@ -40,9 +42,17 @@ defmodule RemoteRepoTest do
     record = put_in(record.number, 12)
     record = put_in(record.data, "trolollerskaters")
     record = put_in(record.stuff, 3.14159265359/2)
+    record = put_in(record.name, "a fantastic name")
 
     {res, _} = RemoteRepo.update(record)
     assert res == :ok
+
+    {res, _} = RemoteRepo.update(record, expect(exists: record and record.name == "a fantastic name"))
+    assert res == :ok
+
+    {res, _} = RemoteRepo.update(record, expect(exists: record and record.name == "some other name"))
+    assert res != :ok
+
 
     {res, read_record} = RemoteRepo.find(TestModel, record.data_id)
     assert res == :ok

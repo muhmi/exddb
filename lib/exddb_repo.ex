@@ -43,7 +43,7 @@ defmodule Exddb.Repo do
 
       def insert(record), do: insert(@adapter, table_name(record), record)
 
-      def update(record), do: update(@adapter, table_name(record), record)
+      def update(record, expect \\ nil), do: update(@adapter, table_name(record), record, expect)
 
       def delete(record), do: delete(@adapter, table_name(record), record)
 
@@ -70,12 +70,13 @@ defmodule Exddb.Repo do
   end
 
   @spec update(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
-  def update(adapter, table_name, record) do
+  def update(adapter, table_name, record, expect \\ nil) do
+      if expect == nil, do: expect = expect(exist: record)
       {model, key} = metadata(record)
       case model.__validate__(record)  do
         :ok ->
         value = Map.get(record, key)
-        case adapter.put_item(table_name, {key, value}, Exddb.Type.dump(record), expect(exist: record)) do
+        case adapter.put_item(table_name, {key, value}, Exddb.Type.dump(record), expect) do
           {:ok, []} ->  {:ok, record}
           {:error, error} -> {:error, error}
         end
