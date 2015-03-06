@@ -23,7 +23,7 @@ defmodule Exddb.ConditionalOperation do
     end
   end
 
-  def build([exists: {:and, _, [{record, _, _}, {:==, _, [{{:., _, [{_, _, _}, field]}, _, []}, expect_value]}]}], env) do
+  def build([exist: {record, _, _}, where: {:==, _, [{{:., _, [{obj, _, _}, field]}, _, _}, expect_value]}], env) do
     quote do
       Exddb.ConditionalOperation.expect_exists(unquote(Macro.var(record, env.context)), [{unquote(field), unquote(expect_value)}])
     end

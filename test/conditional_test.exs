@@ -19,7 +19,7 @@ defmodule ConditionalOpTest do
     assert [expected: {"data_id", "10"}] == ConditionalOperation.expect(exist: item)
     assert [expected: {"data_id", false}] == ConditionalOperation.expect(not_exist: item)
 
-    assert [expected: [{"data_id", "10"}, {"name", "some_name"}]] == ConditionalOperation.expect(exists: item and item.name == "some_name")
+    assert [expected: [{"data_id", "10"}, {"name", "some_name"}]] == ConditionalOperation.expect(exist: item, where: item.name == "some_name")
   end
 
 end

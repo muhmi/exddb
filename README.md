@@ -68,7 +68,7 @@ record = TestModel.new data_id: to_string(now), data: "something important", tru
 
 # Another example:
 
-iex> RemoteRepo.update(record, ConditionalOperation.expect(exist: record and record.name == "some other name"))
+iex> RemoteRepo.update(record, ConditionalOperation.expect(exist: record, where: record.name == "some other name"))
 {:error, {"ConditionalCheckFailedException", "The conditional request failed"}}
 
 
