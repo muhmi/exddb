@@ -1,4 +1,8 @@
 defmodule Exddb.ConditionalOperation do
+  @moduledoc ~S"""
+  Provide naive mappings from Elxir operations to arrays describing conditional operations that can be used with
+  erlclouds DynamoDB API.
+  """
 
   defmacro __using__(_opts) do
     quote do
@@ -9,16 +13,45 @@ defmodule Exddb.ConditionalOperation do
 
   @operators [:and, :or]
 
+  @doc ~S"""
+  Macro for buidling existence tests like:
+
+    `conditional_op(exist: item) -> [expected: [{"key", "value", :eq}]`
+
+  Here the struct `item` is used to find a data model definition, from which the
+  key field is queried and then used to build the expression.
+
+  """
   defmacro conditional_op(expr) do
     build(expr, __CALLER__, :and)
   end
+  @doc ~S"""
+  Macro for building chained conditional operations.
+
+  For example:
+
+    `conditional_op_or(op: item.name == "some_name", op: item.name == "another name")`
+  ->
+    `[expected: [{"name", "some_name", :eq}, {"name", "another name", :eq}], conditional_op: :or]`
+
+
+  """
   defmacro conditional_op_or(expr) do
     build(expr, __CALLER__, :or)
   end
+
+  @doc ~S"""
+  Macro for building chained conditional operations. Does the same as `conditional_op_or/1` but
+  will use `conditional_op: :and`
+  """
   defmacro conditional_op_and(expr) do
     build(expr, __CALLER__, :and)
   end
 
+  @doc ~S"""
+  Build conditional operation from a list of `<<op_type>>: <<item>>.<<field>> <<operator>> <<value>>` definitios.
+  Where `op_type` is one of `[:exist, :not_exist, :op]`.
+  """
   def build(list, env, op) do
     if Enum.count(list) > 1 do
       [

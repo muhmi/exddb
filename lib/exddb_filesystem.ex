@@ -67,7 +67,7 @@ defmodule Exddb.Adapters.FS do
       false
     end
   end
-  def query_filter(item, []), do: true
+  def query_filter(_item, []), do: true
 
   def put_or_replace(table_name, {id_key, id_value}, item) do
     items = read_table(table_name) |>  Enum.filter(&match?(&1, id_key, id_value))
