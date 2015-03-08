@@ -16,7 +16,7 @@ defmodule Exddb.Adapters.FS do
    put_or_replace(table_name, key_spec, item)
   end
 
-  def put_item(table_name, key_spec, item, [{:expected, [{_id, false}]}] = _expect_not_to_exist) do
+  def put_item(table_name, key_spec, item, [{:expected, [{_id, :null}]}] = _expect_not_to_exist) do
     put_new(table_name, key_spec, item)
   end
 

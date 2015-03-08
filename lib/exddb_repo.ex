@@ -57,7 +57,7 @@ defmodule Exddb.Repo do
 
   @spec insert(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
   def insert(adapter, table_name, record, conditional_op \\ nil) do
-    if conditional_op == nil, do: conditional_op = ConditionalOperation.op_and(not_exist: record)
+    if conditional_op == nil, do: conditional_op = conditional_op(not_exist: record)
     {model, key} = metadata(record)
     case model.__validate__(record) do
       :ok ->
@@ -72,7 +72,7 @@ defmodule Exddb.Repo do
 
   @spec update(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
   def update(adapter, table_name, record, conditional_op \\ nil) do
-      if conditional_op == nil, do: conditional_op = ConditionalOperation.op_and(exist: record)
+      if conditional_op == nil, do: conditional_op = conditional_op(exist: record)
       {model, key} = metadata(record)
       case model.__validate__(record)  do
         :ok ->
@@ -87,7 +87,7 @@ defmodule Exddb.Repo do
 
   @spec delete(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
   def delete(adapter, table_name, record, conditional_op \\ nil) do
-    if conditional_op == nil, do: conditional_op = ConditionalOperation.op_and(exist: record)
+    if conditional_op == nil, do: conditional_op = conditional_op(exist: record)
     {model, key} = metadata(record)
     key_type = model.__schema__(:field, key)
     value = Map.get(record, key)
