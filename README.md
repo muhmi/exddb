@@ -1,25 +1,40 @@
 Exddb
 =====
 
-Simple and lightweight object mapper for DynamoDB and Elixir
+Simple lightweight object mapper for DynamoDB and Elixir.
+
+*This is very much a work in progress, interfaces can and probably will change.*
+
+Opinionated Assumptions
+-----------------------
+
+The library assumes that you want to define a schema for some of the things you keep in your
+awesome schema-free database.
+
+It also argues that you want to always write the full items to DynamoDB and not take advantage of 
+`UpdateItem` API.
+
 
 Defining your data model
 -------------------------
 
 ```elixir
-defmodule TestModel do
+defmodule MyShopApp.ReceiptModel do
   use Exddb.Model
   
-  @hash_key :data_id
-  @table_name "testmodel"
+  @table_name "receipts"
+  @hash_key :receipt_id
+  
+  # define our schema
   model do
-    field :data_id, :string
-    field :name, :string, default: "lol"
-    field :data, :binary, default: <<0, 1, 3, 4>>, null: false
-    field :number, :integer
-    field :truth, :boolean
-    field :stuff, :float, default: 3.14159265359
+    field :receipt_id, :string
+    field :client_id, :string, null: false
+    field :total, :float
+    field :items, :integer
+    field :processed, :boolean
+    field :raw, :binary
   end
+
 end
 ```
 
@@ -27,39 +42,14 @@ Setup a repository
 -------------------------
 All database operations are done through a repository module.
 ```elixir
-defmodule RemoteRepo do
+defmodule MyShopApp.Repo do
   use Exddb.Repo, adapter: Exddb.Adapters.DynamoDB,
-                  table_name_prefix: "exddb_"
+                  table_name_prefix: "shopdb_"
 end
 ```
 Using the repository:
 ```elixir
-record = TestModel.new data_id: to_string(now), data: "something important", truth: true
-{:ok, _record} = RemoteRepo.insert(record)
+record = ReceiptModel.new receipt_id: "123-456", raw: "something important", processed: true
+{:ok, _record} = Repo.insert(record)
 ```
 
-Note: You can define multiple repositories in your app.
-
-Conditional operations
--------------------------
-
-Currently only a few simple condiotional operations are supported with insert, update and delete.
-
-```elixir
-record = TestModel.new data_id: to_string(now), data: "something important", truth: true
-{:ok, _record} = RemoteRepo.insert(record)
-
-# Is equivalent to:
-
-record = TestModel.new data_id: to_string(now), data: "something important", truth: true
-{:ok, _record} = RemoteRepo.insert(record, conditional_op(not_exist: record))
-
-# -> Ceates a conditional operation that checks that there is no record with the key data_id you are trying to insert
-
-# Another example:
-
-iex> RemoteRepo.update(record, conditional_op(exist: record, op: record.name == "some other name"))
-{:error, {"ConditionalCheckFailedException", "The conditional request failed"}}
-
-
-```
