@@ -62,13 +62,13 @@ record = TestModel.new data_id: to_string(now), data: "something important", tru
 # Is equivalent to:
 
 record = TestModel.new data_id: to_string(now), data: "something important", truth: true
-{:ok, _record} = RemoteRepo.insert(record, ConditionalOperation.expect(not_exist: record))
+{:ok, _record} = RemoteRepo.insert(record, conditional_op(not_exist: record))
 
 # -> Ceates a conditional operation that checks that there is no record with the key data_id you are trying to insert
 
 # Another example:
 
-iex> RemoteRepo.update(record, ConditionalOperation.expect(exist: record, where: record.name == "some other name"))
+iex> RemoteRepo.update(record, conditional_op(exist: record, op: record.name == "some other name"))
 {:error, {"ConditionalCheckFailedException", "The conditional request failed"}}
 
 
