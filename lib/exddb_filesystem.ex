@@ -16,12 +16,12 @@ defmodule Exddb.Adapters.FS do
    put_or_replace(table_name, key_spec, item)
   end
 
-  def put_item(table_name, key_spec, item, [expected: {_id, false}] = _expect_not_to_exist) do
+  def put_item(table_name, key_spec, item, [{:expected, [{_id, false}]}] = _expect_not_to_exist) do
     put_new(table_name, key_spec, item)
   end
 
-  def put_item(table_name, {key, val}, item, [expected: _id] = expect) when is_atom(key), do: put_item(table_name, {Atom.to_string(key), val}, item, expect)
-  def put_item(table_name, key_spec, item, [expected: _id] = _expect_to_exist) do
+  def put_item(table_name, {key, val}, item, [{:expected, _id}|_] = expect) when is_atom(key), do: put_item(table_name, {Atom.to_string(key), val}, item, expect)
+  def put_item(table_name, key_spec, item, [{:expected, _id}|_] = _expect_to_exist) do
     case get_item(table_name, key_spec) do
       {:ok, []} -> {:error, :does_not_exist}
       {:ok, _} -> put_or_replace(table_name, key_spec, item) 
