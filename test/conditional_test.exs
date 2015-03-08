@@ -11,15 +11,19 @@ defmodule ConditionalOpTest do
     model do
       field :data_id, :string
       field :name, :string
+      field :last_name, :string
      end
   end
 
   test "expect" do
     item = TestModel.new data_id: "10"
-    assert [expected: {"data_id", "10"}] == ConditionalOperation.expect(exist: item)
-    assert [expected: {"data_id", false}] == ConditionalOperation.expect(not_exist: item)
+    assert [expected: {"data_id", "10"}] == ConditionalOperation.op_and(exist: item)
+    assert [expected: {"data_id", false}] == ConditionalOperation.op_and(not_exist: item)
 
-    assert [expected: [{"data_id", "10"}, {"name", "some_name"}]] == ConditionalOperation.expect(exist: item, where: item.name == "some_name")
+    assert  [expected: [{"data_id", "10"}, {"name", "some_name"}], conditional_op: :and] == 
+            ConditionalOperation.op_and(exist: item, eq: item.name == "some_name")
+
+    #assert [expected: [{"data_id", "10"}, {"name", "John"}, {"last_name", "Doe"}]] == ConditionalOperation.expect(exist: item, where: item.name == "John" and item.last_name == "Doe")
   end
 
 end

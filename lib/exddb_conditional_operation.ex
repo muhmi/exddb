@@ -7,7 +7,7 @@ defmodule Exddb.ConditionalOperation do
     end
   end
 
-  defmacro expect(expr) do
+  defmacro op_and(expr) do
     build(expr, __CALLER__)
   end
 
@@ -23,7 +23,7 @@ defmodule Exddb.ConditionalOperation do
     end
   end
 
-  def build([exist: {record, _, _}, where: {:==, _, [{{:., _, [{obj, _, _}, field]}, _, _}, expect_value]}], env) do
+  def build([exist: {record, _, _}, eq: {:==, _, [{{:., _, [{obj, _, _}, field]}, _, _}, expect_value]}], env) when record == obj do
     quote do
       Exddb.ConditionalOperation.expect_exists(unquote(Macro.var(record, env.context)), [{unquote(field), unquote(expect_value)}])
     end
@@ -59,6 +59,6 @@ defmodule Exddb.ConditionalOperation do
     statement = [{Atom.to_string(key), enncoded}|statement]
     expect_exists(record, rest, statement)
   end
-  def expect_exists(_record, [], statement), do: [expected: Enum.reverse(statement)]
+  def expect_exists(_record, [], statement), do: [{:expected, Enum.reverse(statement)}, {:conditional_op, :and}]
 
 end
