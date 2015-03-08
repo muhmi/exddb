@@ -36,14 +36,6 @@ defmodule Exddb.Adapters.FS do
   end
   end
 
-  def put_or_replace(table_name, {id_key, id_value}, item) do
-    items = read_table(table_name) |>  Enum.filter(&match?(&1, id_key, id_value))
-    item = item |> Enum.map(fn({k, v}) -> {k, encode(v)} end)
-    items = [item | items]
-    write_table(table_name, items)
-    {:ok, []}
-  end
-
   def delete_item(table_name, {id_key, id_value}, _expect_exists) do
     items = read_table(table_name)
     item = Enum.find(items, &match?(&1, id_key, id_value))
@@ -54,6 +46,35 @@ defmodule Exddb.Adapters.FS do
     else
       {:error, :does_not_exist}
     end
+  end
+
+  def query(table_name, key_spec, options) do
+    items = read_table(table_name) |> Enum.filter(fn(item) -> 
+      query_filter(item, key_spec)
+    end)
+    if Keyword.get(options, :limit) != nil do
+      items = Enum.take(items, Keyword.get(options, :limit))
+    end
+    {:ok, items |> Enum.map(fn(item) -> Enum.map(item, fn({k, v}) -> {k, decode(v)} end) end)}
+  end
+
+  # Helpers
+
+  def query_filter(item, [{k, v}|rest]) do
+    if match?(item, k, v) do
+      query_filter(item, rest)
+    else
+      false
+    end
+  end
+  def query_filter(item, []), do: true
+
+  def put_or_replace(table_name, {id_key, id_value}, item) do
+    items = read_table(table_name) |>  Enum.filter(&match?(&1, id_key, id_value))
+    item = item |> Enum.map(fn({k, v}) -> {k, encode(v)} end)
+    items = [item | items]
+    write_table(table_name, items)
+    {:ok, []}
   end
 
   def get_item(table_name, {id_key, id_value}) do
@@ -76,14 +97,7 @@ defmodule Exddb.Adapters.FS do
     end
   end
 
-  def decode([{"b", v}] = _msg), do: Base.decode64!(v)
-  def decode(v), do: v
-
-  def encode({:b, v}), do: %{:b => Base.encode64(v)}
-  def encode(v), do: v
-
   def write_table(table_name, items) do
-
     File.write! table_file(table_name), :jsx.encode(items, [:indent])
   end
 
@@ -97,5 +111,11 @@ defmodule Exddb.Adapters.FS do
     item = Enum.find(item, fn({k, v})-> k == key && v == value end)
     item != nil
   end
+
+  def decode([{"b", v}] = _msg), do: Base.decode64!(v)
+  def decode(v), do: v
+
+  def encode({:b, v}), do: %{:b => Base.encode64(v)}
+  def encode(v), do: v
 
 end

@@ -26,4 +26,8 @@ defmodule Exddb.Adapters.DynamoDB do
     :erlcloud_ddb2.get_item(table_name, key_spec)
   end
 
+  def query(table_name, key_conditions, options) do
+    :erlcloud_ddb2.q(table_name, key_conditions, options)
+  end
+
 end

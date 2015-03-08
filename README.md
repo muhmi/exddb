@@ -3,16 +3,6 @@ Exddb
 
 Simple and lightweight object mapper for DynamoDB and Elixir
 
-Features:
-- Basic CRUD operations and find
-- Can use DynamoDB or local file system for storing data
-- Conditional operations
-
-TODO:
-- Range keys
-- Query support =)
-
-
 Defining your data model
 -------------------------
 

@@ -49,6 +49,8 @@ defmodule Exddb.Repo do
 
       def find(model, record_id), do: find(@adapter, table_name(model), model, record_id)
 
+      def query(model, key_conditions, options \\ []), do: query(@adapter, table_name(model), model, key_conditions, options)
+
       defp table_name(%{} = record), do: table_name(record.__struct__)
       defp table_name(model), do: @table_name_prefix <> model.__schema__(:table_name)
 
@@ -108,6 +110,20 @@ defmodule Exddb.Repo do
     case adapter.get_item(table_name, {to_string(key), encoded_id}) do
       {:ok, []} -> :not_found
       {:ok, item} -> {:ok, Exddb.Type.parse(item, model.new)}
+    end
+  end
+
+  def query(adapter, table_name, model, key_conditions, options) do
+    options = Keyword.put_new(options, :select, :all_attributes)
+    options = Keyword.put_new(options, :consistent_read, :true)
+    if not is_list(key_conditions), do: key_conditions = [key_conditions]
+    key_conditions = Enum.map(key_conditions, fn({k, v}) ->
+      field_type = model.__schema__(:field, k)
+      {Atom.to_string(k), Exddb.Type.dump(field_type, v)}
+    end)
+    case adapter.query(table_name, key_conditions, options) do
+      {:ok, data} -> {:ok, data |> Stream.map(&model.__parse__(&1))}
+      {:error, error} -> {:error, error}
     end
   end
 

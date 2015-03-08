@@ -53,6 +53,16 @@ defmodule RemoteRepoTest do
     {res, _} = RemoteRepo.update(record, conditional_op_and(exist: record, op: record.name == "some other name"))
     assert res != :ok
 
+    {res, results} = RemoteRepo.query(TestModel, {:data_id, record.data_id})
+    assert res == :ok
+
+    [data] = Enum.take(results, 1)
+
+    assert data.data_id == record.data_id
+    assert data.data == record.data
+    assert data.number == record.number
+    assert data.truth == record.truth
+    assert data.stuff == record.stuff
 
     {res, read_record} = RemoteRepo.find(TestModel, record.data_id)
     assert res == :ok

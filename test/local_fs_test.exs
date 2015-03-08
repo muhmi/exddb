@@ -125,4 +125,18 @@ defmodule LocalRepoTest do
     assert res != :ok
   end
 
+  test "query" do
+    record = TestModel.new data_id: "1", data: "trololoollelelre"
+    
+    {res, _} = LocalRepo.insert(record)
+    assert res == :ok
+    
+    {res, results} = LocalRepo.query(TestModel, {:data_id, record.data_id})
+    assert res == :ok
+
+    [data] = Enum.take(results, 1)
+
+    assert record.data_id == data.data_id
+  end
+
 end
