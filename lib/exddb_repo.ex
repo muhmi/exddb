@@ -1,6 +1,23 @@
-# Again very much copied from Ecto (https://github.com/elixir-lang/ecto/blob/78ba32ca8639128c0ad36303d6d7a13ec36d2e22/lib/ecto/repo/config.ex)
 defmodule Exddb.Repo do
+  @moduledoc ~S"""
+  This module acts as a wrapper for the database, routing calls to correct backend implementations. 
 
+  Currently `:exddb` supports DynamoDB through `erlcloud` and a limiteds backend for storing data directly to the
+  local filesystem as JSON files.
+
+  You are expected to implement a `Repo` module for your own app, for example:
+
+      defmodule ShopApp.Repo do
+        use Exddb.Repo, adapter: Exddb.Adapters.DynamoDB,
+                        table_name_prefix: "myshopapp_#{to_string(Mix.env)}_"
+      end
+
+  You can then use your apps `Repo` module to make calls to the database:
+
+      iex> ShopApp.Repo.find(ShopApp.ReceiptModel, "123-456-789")
+      {:ok, %ShopApp.ReceiptModel{receipt_id: "123-456-789"", ...}}
+
+  """
   use Behaviour
   use Exddb.ConditionalOperation
 
