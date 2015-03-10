@@ -66,6 +66,7 @@ defmodule Exddb.Model do
       model_fields = @model_fields |> Enum.reverse
 
       Module.eval_quoted __MODULE__, [
+        Exddb.Model.__access__,
         Exddb.Model.__struct__(struct_fields),
         Exddb.Model.__fields__(model_fields),
         Exddb.Model.__key__(@hash_key),
@@ -120,6 +121,21 @@ defmodule Exddb.Model do
           end
         end
         Map.merge(defaults, attributes)
+      end
+    end
+  end
+
+  def __access__ do
+    quote do
+      def set(item, attributes \\ []) do
+        defaults = __struct__
+        attributes = Enum.into(attributes, Map.new)
+        for k <- Map.keys(attributes) do
+          if not Map.has_key?(defaults, k) do
+            raise ArgumentError, "Key #{inspect k} not defined in schema #{__MODULE__}"
+          end
+        end
+        Map.merge(item, attributes)
       end
     end
   end
