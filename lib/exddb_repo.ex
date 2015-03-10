@@ -22,13 +22,14 @@ defmodule Exddb.Repo do
   use Exddb.ConditionalOperation
 
   @type t :: module
+  @type return_ok_item :: {:ok, Exddb.Model.t} | {:error, :any}
 
   defcallback create_table(model :: Exddb.Repo.t, write_units :: integer, read_units :: integer) :: :ok | :any
   defcallback delete_table(model :: Exddb.Repo.t) :: :ok | :any
 
-  defcallback insert(record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
-  defcallback update(record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
-  defcallback delete(record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  defcallback insert(record :: Exddb.Model.t) :: return_ok_item
+  defcallback update(record :: Exddb.Model.t) :: return_ok_item
+  defcallback delete(record :: Exddb.Model.t) :: return_ok_item
 
   defcallback find(model :: Exddb.Model.t, item_id :: String.t) :: {:ok, Exddb.Model.t} | :not_found | {:error, :any}
 
@@ -74,7 +75,7 @@ defmodule Exddb.Repo do
     end
   end
 
-  @spec insert(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  @spec insert(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: return_ok_item
   def insert(adapter, table_name, record, conditional_op \\ nil) do
     if conditional_op == nil, do: conditional_op = conditional_op(not_exist: record)
     {model, key} = metadata(record)
@@ -89,7 +90,7 @@ defmodule Exddb.Repo do
     end
   end
 
-  @spec update(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  @spec update(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: return_ok_item
   def update(adapter, table_name, record, conditional_op \\ nil) do
       if conditional_op == nil, do: conditional_op = conditional_op(exist: record)
       {model, key} = metadata(record)
@@ -104,7 +105,7 @@ defmodule Exddb.Repo do
       end
   end
 
-  @spec delete(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: {:ok, Exddb.Model.t} | {:error, :any}
+  @spec delete(adapter :: Exddb.Adapter.t, table_name :: String.t, record :: Exddb.Model.t) :: return_ok_item
   def delete(adapter, table_name, record, conditional_op \\ nil) do
     if conditional_op == nil, do: conditional_op = conditional_op(exist: record)
     {model, key} = metadata(record)
@@ -119,7 +120,7 @@ defmodule Exddb.Repo do
     end
   end
 
-  @spec find(adapter :: Exddb.Adapter.t, table_name :: String.t, model :: Exddb.Model.t, record_id :: :any) :: {:ok, Exddb.Model.t} | {:error, :any}
+  @spec find(adapter :: Exddb.Adapter.t, table_name :: String.t, model :: Exddb.Model.t, record_id :: :any) :: {:ok, Exddb.Model.t} | :not_found | {:error, :any}
   def find(adapter, table_name, model, record_id) do
     key = model.__schema__(:key)
     key_type = model.__schema__(:field, key)
@@ -130,6 +131,7 @@ defmodule Exddb.Repo do
     end
   end
 
+  @spec query(adapter :: Exddb.Adapter.t, table_name :: String.t, model :: Exddb.Model.t, key_conditions :: term, options :: term) :: {:ok, :any} | {:error, :any}
   def query(adapter, table_name, model, key_conditions, options) do
     options = Keyword.put_new(options, :select, :all_attributes)
     options = Keyword.put_new(options, :consistent_read, :true)
