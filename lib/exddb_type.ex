@@ -45,7 +45,10 @@ defmodule Exddb.Type do
   def dump(:integer, v), do: v
   def dump(:float, v), do: v
   def dump(:boolean, v), do: Atom.to_string(v)
+  def dump(:binary, ""), do: nil
+  def dump(:binary, nil), do: nil
   def dump(:binary, v), do: {:b, v}
+  def dump(:string, ""), do: nil
   def dump(:string, v) when is_binary(v), do: v
   def dump(:string, v), do: to_string(v)
 
