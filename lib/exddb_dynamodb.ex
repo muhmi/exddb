@@ -14,12 +14,12 @@ defmodule Exddb.Adapters.DynamoDB do
     :erlcloud_ddb2.put_item(table_name, item)
   end
 
-  def put_item(table_name, _key, item, expect_not_exists) do
-    :erlcloud_ddb2.put_item(table_name, item, expect_not_exists)
+  def put_item(table_name, _key, item, conditional_op) do
+    :erlcloud_ddb2.put_item(table_name, item, conditional_op)
   end
 
-  def delete_item(table_name, key_spec, expect_exists) do
-    :erlcloud_ddb2.delete_item(table_name, key_spec, expect_exists)
+  def delete_item(table_name, key_spec, conditional_op) do
+    :erlcloud_ddb2.delete_item(table_name, key_spec, conditional_op)
   end
 
   def get_item(table_name, key_spec) do
