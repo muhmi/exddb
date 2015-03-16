@@ -1,0 +1,4 @@
+language: elixir
+notifications:
+  recipients:
+    - roope.kangas@gmail.com
