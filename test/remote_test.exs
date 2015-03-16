@@ -31,6 +31,7 @@ defmodule RemoteRepoTest do
     :ok
   end
 
+  @tag :external
   test "crud" do
     now = :calendar.datetime_to_gregorian_seconds(:calendar.universal_time)
     record = TestModel.new data_id: to_string(now), data: "trololoollelelre", truth: true
