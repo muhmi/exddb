@@ -21,10 +21,9 @@ defmodule LocalRepoTest do
 
   end
 
-  #setup do
-  #  LocalRepo.delete_table(TestModel)
-  #end
-
+  setup do
+    LocalRepo.delete_table(TestModel)
+  end
 
   test "dump does not include nulls" do
     dump = TestModel.__dump__(TestModel.new)
