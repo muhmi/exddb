@@ -58,10 +58,10 @@ record = ReceiptModel.new receipt_id: "123-456", raw: "something important", pro
 Running tests with local DynamoDB
 ---------------------------------
 
-Amazon provides [java service|http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tools.DynamoDBLocal.html] 
+Amazon provides [java service](http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tools.DynamoDBLocal.html)
 that mimics DynamoDB for local development.
 
-I run it inside a [Docker container|https://registry.hub.docker.com/u/deangiberson/aws-dynamodb-local/]
+I run it inside a [Docker container](https://registry.hub.docker.com/u/deangiberson/aws-dynamodb-local/)
 
 	$  docker run -d -p 8000:8000 --name dynamodb deangiberson/aws-dynamodb-local
 
