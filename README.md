@@ -55,3 +55,28 @@ record = ReceiptModel.new receipt_id: "123-456", raw: "something important", pro
 {:ok, _record} = Repo.insert(record)
 ```
 
+Running tests with local DynamoDB
+---------------------------------
+
+Amazon provides [java service|http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tools.DynamoDBLocal.html] 
+that mimics DynamoDB for local development.
+
+I run it inside a [Docker container|https://registry.hub.docker.com/u/deangiberson/aws-dynamodb-local/]
+
+	$  docker run -d -p 8000:8000 --name dynamodb deangiberson/aws-dynamodb-local
+
+Then run tests with
+
+	$ mix test --include local_dynamo
+
+
+Running tests using AWS
+-----------------------
+
+To run tests using DynamoDB on your AWS account:
+
+```elixir
+$ mix test --include external
+```
+
+

@@ -1,2 +1,2 @@
-ExUnit.configure exclude: [:external]
+ExUnit.configure exclude: [:external, :local_dynamo]
 ExUnit.start()

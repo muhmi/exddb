@@ -1,19 +1,20 @@
+Code.require_file "../local_dynamo_config.exs", __ENV__.file
 Code.require_file "../dynamodb_repo.exs", __ENV__.file
 
-defmodule RemoteRepoTest do
-  use ExUnit.Case
+defmodule LocalDynamoDBTest do
+ use ExUnit.Case
 
   use Exddb.ConditionalOperation
 
   setup_all do
-    # todo: write some prepare/teardown mix task
     :ssl.start()
+    :erlang.put(:aws_config, LocalDynamoConfig.get())
     :erlcloud.start()
     RemoteRepo.create_table(TestModel)
     :ok
   end
 
-  @tag :external
+  @tag :local_dynamo
   test "crud" do
     now = :calendar.datetime_to_gregorian_seconds(:calendar.universal_time)
     record = TestModel.new data_id: to_string(now), data: "trololoollelelre", truth: true
@@ -63,5 +64,6 @@ defmodule RemoteRepoTest do
     {res, _} = RemoteRepo.delete(record)
     assert res != :ok
   end
+
 
 end
