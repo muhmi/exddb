@@ -65,5 +65,12 @@ defmodule LocalDynamoDBTest do
     assert res != :ok
   end
 
+  #@tag :local_dynamo
+  #test "range" do
+  #  res = RemoteRepo.create_table(ModelWithHashAndRange)
+  #  assert res == :ok
+  #  res = RemoteRepo.delete_table(ModelWithHashAndRange)
+  #  assert res == :ok
+  #end
 
 end

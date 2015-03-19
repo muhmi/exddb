@@ -19,6 +19,9 @@ defmodule Exddb.Type do
   def parse(:integer, {:n, v}), do: v
   def parse(:integer, v) when is_binary(v), do: v
   def parse(:integer, v) when is_number(v), do: v
+  def parse(:int, {:n, v}), do: v
+  def parse(:int, v) when is_binary(v), do: v
+  def parse(:int, v) when is_number(v), do: v
   def parse(:float, {:n, v}), do: v
   def parse(:float, v) when is_binary(v), do: v
   def parse(:float, v) when is_number(v), do: v
@@ -43,6 +46,7 @@ defmodule Exddb.Type do
 
   def dump(:atom, v), do: Atom.to_string(v)
   def dump(:integer, v), do: v
+  def dump(:int, v), do: v
   def dump(:float, v), do: v
   def dump(:boolean, v), do: Atom.to_string(v)
   def dump(:binary, ""), do: nil
@@ -51,5 +55,13 @@ defmodule Exddb.Type do
   def dump(:string, ""), do: nil
   def dump(:string, v) when is_binary(v), do: v
   def dump(:string, v), do: to_string(v)
+
+  def dynamo_type(:string), do: :s
+  def dynamo_type(:boolean), do: :s
+  def dynamo_type(:atom), do: :s
+  def dynamo_type(:float), do: :n
+  def dynamo_type(:integer), do: :n
+  def dynamo_type(:int), do: :n
+  def dynamo_type(:binary), do: :b
 
 end

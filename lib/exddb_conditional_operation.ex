@@ -1,4 +1,7 @@
 defmodule Exddb.ConditionalOperation do
+
+  import Exddb.Type
+
   @moduledoc ~S"""
   Provide naive mappings from Elxir operations to arrays describing conditional operations that can be used with
   erlclouds DynamoDB API.
@@ -53,15 +56,18 @@ defmodule Exddb.ConditionalOperation do
   Where `op_type` is one of `[:exist, :not_exist, :op]`.
   """
   def build(list, env, op) do
-    if Enum.count(list) > 1 do
-      [
-        {:expected, Enum.map(list, fn(x) -> parse_operation(x, env) end)},
-        {:conditional_op, op}
-      ]
+    ops = Enum.map(list, fn(x) -> parse_operation(x, env) end)
+    if Enum.count(ops) > 1 do
+      quote do
+        [
+          {:expected, unquote(ops) |> List.flatten},
+          {:conditional_op, unquote(op)}
+        ]
+      end
     else
-      [
-        {:expected, Enum.map(list, fn(x) -> parse_operation(x, env) end)}
-      ]
+      quote do
+        [{:expected, unquote(ops) |> List.flatten}]
+      end
     end
   end
 
@@ -90,7 +96,9 @@ defmodule Exddb.ConditionalOperation do
     quote do: {unquote(Atom.to_string(field)), unquote(expect_value), :le}
   end
 
+  #
   # runtime helpers
+  #
 
   def expect_not_exists(record) do
     model = record.__struct__
@@ -103,13 +111,17 @@ defmodule Exddb.ConditionalOperation do
 
   def expect_exists(record) do
     model = record.__struct__
-    key = model.__schema__(:key)
-    key_type = model.__schema__(:field, key)
-    value = Map.get(record, key)
-    case {key, Exddb.Type.dump(key_type, value)} do
-      {{hash, range}, {hash_key, range_key}} -> [{Atom.to_string(hash), hash_key, :eq}, {Atom.to_string(range), range_key, :eq}]
-      {hash, hash_key} when is_atom(hash) -> {Atom.to_string(hash), hash_key, :eq}
-    end
+    key_spec = model.__schema__(:key)
+    expect_exists(model, key_spec, record)
+  end
+  def expect_exists(model, {hash, range}, record) do
+    hash_value =  model.__schema__(:field, hash) |> dump(Map.get(record, hash))
+    range_value = model.__schema__(:field, range) |> dump(Map.get(record, range))
+    [{Atom.to_string(hash), hash_value, :eq}, {Atom.to_string(range), range_value, :eq}]
+  end
+  def expect_exists(model, hash, record) do
+    hash_value =  model.__schema__(:field, hash) |> dump(Map.get(record, hash))
+    {Atom.to_string(hash), hash_value, :eq}
   end
 
 end

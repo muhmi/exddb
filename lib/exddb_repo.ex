@@ -45,11 +45,7 @@ defmodule Exddb.Repo do
       @adapter unquote(Keyword.get(opts, :adapter) || Exddb.Adapters.DynamoDB)
 
       def create_table(model, write_units \\ 1, read_units \\ 1) do
-        key = model.__schema__(:key)
-        case @adapter.create_table(table_name(model), {key, :s}, key, write_units, read_units) do
-          {:ok, _result}   -> :ok
-          error           -> error
-        end
+        create_table(@adapter, model, table_name(model), write_units, read_units)
       end
 
       def delete_table(model) do
@@ -72,6 +68,35 @@ defmodule Exddb.Repo do
       defp table_name(%{} = record), do: table_name(record.__struct__)
       defp table_name(model), do: @table_name_prefix <> model.__schema__(:table_name)
 
+    end
+  end
+
+  @spec create_table(adapter :: Exddb.Adapter.t, model :: Exddb.Model.t, table_name :: String.t, write_units :: integer, read_units :: integer) :: :ok | {:error, :any}
+  def create_table(adapter, model, table_name, write_units, read_units) do
+    key = model.__schema__(:key)
+    create_table(adapter, model, table_name, key, write_units, read_units)
+  end
+
+  @doc ~S"""
+  Create table with hash and range key
+  """
+  def create_table(adapter, model, table_name, {key, range}, write_units, read_units) do
+    key_type = model.__schema__(:field, key) |> Exddb.Type.dynamo_type
+    range_type = model.__schema__(:field, range) |> Exddb.Type.dynamo_type
+    case adapter.create_table(table_name, [{key, key_type}, {range, range_type}], {key, range}, write_units, read_units) do
+      {:ok, _result}   -> :ok
+      error           -> error
+    end
+  end
+
+  @doc ~S"""
+  Create table with hash key
+  """
+  def create_table(adapter, model, table_name, key, write_units, read_units) when is_atom(key) do
+    key_type = model.__schema__(:field, key) |> Exddb.Type.dynamo_type
+    case adapter.create_table(table_name, {key, key_type}, key, write_units, read_units) do
+      {:ok, _result}   -> :ok
+      error           -> error
     end
   end
 

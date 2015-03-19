@@ -10,6 +10,7 @@ defmodule RemoteRepoTest do
     :ssl.start()
     :erlcloud.start()
     RemoteRepo.create_table(TestModel)
+    RemoteRepo.create_table(ModelWithHashAndRange)
     :ok
   end
 
@@ -62,6 +63,24 @@ defmodule RemoteRepoTest do
 
     {res, _} = RemoteRepo.delete(record)
     assert res != :ok
+  end
+
+  @tag :external
+  test "test crud with range" do
+    now = :calendar.datetime_to_gregorian_seconds(:calendar.universal_time)
+    record = ModelWithHashAndRange.new data_id: "post", timestamp: now, content: "some text"
+    {res, _} = RemoteRepo.insert(record)
+    assert res == :ok
+    {res, _} = RemoteRepo.insert(record)
+    assert res != :ok
+
+    record = put_in(record.content, "a foobar from hell!")
+
+    {res, _} = RemoteRepo.update(record)
+    assert res == :ok
+
+    #{res, _} = RemoteRepo.delete(record)
+    #assert res != :ok
   end
 
 end

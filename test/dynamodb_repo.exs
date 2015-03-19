@@ -17,3 +17,15 @@ defmodule TestModel do
     field :stuff, :float, default: 3.14159265359
   end
 end
+
+defmodule ModelWithHashAndRange do
+  use Exddb.Model
+
+  @key {:data_id, :timestamp}
+  @table_name "testmodel_range"
+  model do
+    field :data_id, :string
+    field :timestamp, :int
+    field :content, :string
+  end
+end
