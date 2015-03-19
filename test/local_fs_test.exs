@@ -9,7 +9,7 @@ defmodule LocalRepoTest do
   defmodule TestModel do
     use Exddb.Model
 
-    @hash_key :data_id
+    @key :data_id
 
     model do
       field :data_id, :string

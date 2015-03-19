@@ -8,7 +8,7 @@ defmodule Exddb.Model do
         use Exddb.Model
         
         @table_name "receipts"
-        @hash_key :receipt_id
+        @key :receipt_id
         
         # define our schema
         model do
@@ -41,7 +41,7 @@ defmodule Exddb.Model do
   defmacro __using__(_) do
     quote do
       import Exddb.Model, only: [model: 1]
-       @hash_key :hash
+       @key :hash
        @table_name Atom.to_string(Mix.env) <> "_" <> inspect(__MODULE__)
     end
   end
@@ -69,10 +69,10 @@ defmodule Exddb.Model do
         Exddb.Model.__access__,
         Exddb.Model.__struct__(struct_fields),
         Exddb.Model.__fields__(model_fields),
-        Exddb.Model.__key__(@hash_key),
+        Exddb.Model.__key__(@key),
         Exddb.Model.__new__,
         Exddb.Model.__table_name__(@table_name),
-        Exddb.Model.__nulls__(@allow_null, @hash_key),
+        Exddb.Model.__nulls__(@allow_null, @key),
         Exddb.Model.__convert__,
         Exddb.Model.__validate__
       ]

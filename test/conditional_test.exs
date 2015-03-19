@@ -6,7 +6,7 @@ defmodule ConditionalOpTest do
   defmodule TestModel do
     use Exddb.Model
 
-    @hash_key :data_id
+    @key :data_id
     @table_name "testmodel"
     model do
       field :data_id, :string
@@ -26,7 +26,7 @@ defmodule ConditionalOpTest do
  defmodule LockModel do
     use Exddb.Model
 
-    @hash_key :item_id
+    @key :item_id
     @table_name "testmodel"
     model do
       field :item_id, :string

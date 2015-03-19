@@ -25,7 +25,7 @@ defmodule MyShopApp.ReceiptModel do
   use Exddb.Model
   
   @table_name "receipts"
-  @hash_key :receipt_id
+  @key :receipt_id
   
   # define our schema
   model do
