@@ -4,6 +4,7 @@ defmodule RemoteRepoTest do
   use ExUnit.Case
 
   use Exddb.ConditionalOperation
+  use Exddb.Query
 
   setup_all do
     # todo: write some prepare/teardown mix task
@@ -37,7 +38,7 @@ defmodule RemoteRepoTest do
     {res, _} = RemoteRepo.update(record, conditional_op_and(exist: record, op: record.name == "some other name"))
     assert res != :ok
 
-    {res, results} = RemoteRepo.query(TestModel, {:data_id, record.data_id})
+    {res, results} = RemoteRepo.query(from r in TestModel, where: r.data_id == record.data_id, limit: 1)
     assert res == :ok
 
     [data] = Enum.take(results, 1)
@@ -68,6 +69,16 @@ defmodule RemoteRepoTest do
   @tag :external
   test "test crud with range" do
     now = :calendar.datetime_to_gregorian_seconds(:calendar.universal_time)
+
+    {res, results} = RemoteRepo.query(
+        from r in ModelWithHashAndRange, 
+        where: r.data_id == "post" and r.timestamp in [0..now],
+        limit: 10
+    )
+    assert res == :ok
+    
+    assert Enum.count(results) > 0
+
     record = ModelWithHashAndRange.new data_id: "post", timestamp: now, content: "some text"
     {res, _} = RemoteRepo.insert(record)
     assert res == :ok

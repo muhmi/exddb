@@ -63,7 +63,9 @@ defmodule Exddb.Repo do
 
       def find(model, record_id), do: find(@adapter, table_name(model), model, record_id)
 
-      def query(model, key_conditions, options \\ []), do: query(@adapter, table_name(model), model, key_conditions, options)
+      def query(%Exddb.Query.QueryObject{model: module} = query) do
+        query(@adapter, table_name(module), query)
+      end
 
       defp table_name(%{} = record), do: table_name(record.__struct__)
       defp table_name(model), do: @table_name_prefix <> model.__schema__(:table_name)
@@ -156,20 +158,16 @@ defmodule Exddb.Repo do
     end
   end
 
-  @spec query(adapter :: Exddb.Adapter.t, table_name :: String.t, model :: Exddb.Model.t, key_conditions :: term, options :: term) :: {:ok, :any} | {:error, :any}
-  def query(adapter, table_name, model, key_conditions, options) do
-    options = Keyword.put_new(options, :select, :all_attributes)
-    options = Keyword.put_new(options, :consistent_read, :true)
-    if not is_list(key_conditions), do: key_conditions = [key_conditions]
-    key_conditions = Enum.map(key_conditions, fn({k, v}) ->
-      field_type = model.__schema__(:field, k)
-      {Atom.to_string(k), Exddb.Type.dump(field_type, v)}
-    end)
-    case adapter.query(table_name, key_conditions, options) do
-      {:ok, data} -> {:ok, data |> Stream.map(&model.__parse__(&1))}
-      {:error, error} -> {:error, error}
-    end
-  end
+ @spec query(adapter :: Exddb.Adapter.t, table_name :: String.t, query :: map) :: {:ok, :any} | {:error, :any}
+ def query(adapter, table_name, query) do
+   options = Keyword.put_new(query.options, :select, :all_attributes)
+   options = Keyword.put_new(options, :consistent_read, :true)
+   model = query.model
+   case adapter.query(table_name, query.query, options) do
+     {:ok, data} -> {:ok, data |> Stream.map(&model.__parse__(&1))}
+     {:error, error} -> {:error, error}
+   end
+ end
 
   defp metadata(record) do
     model = record.__struct__
