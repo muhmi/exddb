@@ -1,6 +1,8 @@
 defmodule LocalRepoTest do
   use ExUnit.Case
 
+  use Exddb.Query
+
   defmodule LocalRepo do
     use Exddb.Repo, adapter: Exddb.Adapters.FS, 
                     table_name_prefix: "exddb_"
@@ -17,6 +19,18 @@ defmodule LocalRepoTest do
       field :data, :binary, default: "trololoo", null: false
       field :number, :integer
       field :number2, :float
+    end
+
+  end
+
+  defmodule TestModelRange do
+    use Exddb.Model
+
+    @key {:data_id, :number}
+
+    model do
+      field :data_id, :string
+      field :number, :integer
     end
 
   end
@@ -130,12 +144,21 @@ defmodule LocalRepoTest do
     {res, _} = LocalRepo.insert(record)
     assert res == :ok
     
-    {res, results} = LocalRepo.query(TestModel, {:data_id, record.data_id})
+    {res, results} = LocalRepo.query(from r in TestModel, where: r.data_id == record.data_id)
     assert res == :ok
 
     [data] = Enum.take(results, 1)
 
     assert record.data_id == data.data_id
+
+    for n <- 1..10 do
+      {res, _} = LocalRepo.insert(TestModelRange.new(data_id: "1", number: n))
+      assert res == :ok
+    end
+
+    {res, results} = LocalRepo.query(from r in TestModelRange, where: r.data_id == record.data_id and r.number <= 5)
+    assert res == :ok
+    assert Enum.count(results) == 5
   end
 
 end
