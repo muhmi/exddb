@@ -40,9 +40,6 @@ defmodule Exddb.Query do
   Query by hash key, only one comparison in `:where` expression that will be converted to function call
   """
   def evaluate_where({compare_op, _, [{{:., _, [expr_var, expr_var_field]}, _, _}, expect_field_value]}, var, module, opts) do
-    if var != expr_var do
-      raise ArgumentError, "Unknown variable `#{expr_var}` referenced in query. Did you mean #{var}?"
-    end
     quote do
       query_by_hashkey(unquote(module), unquote(expr_var_field), unquote(expect_field_value), unquote(compare_op), unquote(opts))
     end

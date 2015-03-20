@@ -5,6 +5,7 @@ defmodule LocalDynamoDBTest do
  use ExUnit.Case
 
   use Exddb.ConditionalOperation
+  use Exddb.Query
 
   setup_all do
     :ssl.start()
@@ -37,7 +38,7 @@ defmodule LocalDynamoDBTest do
     {res, _} = RemoteRepo.update(record, conditional_op_and(exist: record, op: record.name == "some other name"))
     assert res != :ok
 
-    {res, results} = RemoteRepo.query(TestModel, {:data_id, record.data_id})
+    {res, results} = RemoteRepo.query(from m in TestModel, where: m.data_id == record.data_id)
     assert res == :ok
 
     [data] = Enum.take(results, 1)
