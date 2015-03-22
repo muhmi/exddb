@@ -39,7 +39,7 @@ defmodule Exddb.Query do
   @doc ~S"""
   Query by hash key, only one comparison in `:where` expression that will be converted to function call
   """
-  def evaluate_where({compare_op, _, [{{:., _, [expr_var, expr_var_field]}, _, _}, expect_field_value]}, var, module, opts) do
+  def evaluate_where({compare_op, _, [{{:., _, [_expr_var, expr_var_field]}, _, _}, expect_field_value]}, _var, module, opts) do
     quote do
       query_by_hashkey(unquote(module), unquote(expr_var_field), unquote(expect_field_value), unquote(compare_op), unquote(opts))
     end
@@ -66,8 +66,7 @@ defmodule Exddb.Query do
   def query_by_hashkey(module, field, value, op, opts) do
     key_field = module.__schema__(:key)
     case key_field do
-      {hash, range} ->
-            %QueryObject{query: build_query_part(module, hash, value, op), model: module, options: opts}
+      {hash, _range} -> %QueryObject{query: build_query_part(module, hash, value, op), model: module, options: opts}
       _ -> %QueryObject{query: build_query_part(module, field, value, op), model: module, options: opts}
     end
   end
