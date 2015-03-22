@@ -82,9 +82,37 @@ defmodule LocalDynamoDBTest do
     assert read_record.data_id == record.data_id
     assert read_record.timestamp == record.timestamp
     assert read_record.content == record.content
-
     {res, _} = RemoteRepo.delete(record)
     assert res == :ok
+  end
+
+  test "query" do
+
+    for n <- 1..20 do
+        record = ModelWithHashAndRange.new data_id: "post", timestamp: n, content: "trololoo"
+        {res, r} = RemoteRepo.insert(record)
+    end
+
+    # Query by hash key only, use limit
+    {res, results} = RemoteRepo.query(
+        from r in ModelWithHashAndRange,
+        where: r.data_id == "post",
+        limit: 10
+    )
+    assert res == :ok
+
+    assert Enum.count(results) == 10
+
+    # Query by hash and range key
+    {res, results} = RemoteRepo.query(
+        from r in ModelWithHashAndRange,
+        where: r.data_id == "post" and r.timestamp > 10,
+        limit: 10
+    )
+    assert res == :ok
+
+    assert Enum.count(results) == 10
+
   end
 
   def new_id, do: :crypto.hash(:md5, :calendar.universal_time |> inspect) |> Base.encode16

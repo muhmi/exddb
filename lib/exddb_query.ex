@@ -7,7 +7,7 @@ defmodule Exddb.Query do
     quote do
       import Exddb.Query
     end
-  end 
+  end
 
   defmodule QueryObject do
     defstruct model: nil, query: {}, options: []
@@ -35,7 +35,7 @@ defmodule Exddb.Query do
       query_by_range(unquote(module), unquote(quoted), unquote(opts))
     end
   end
- 
+
   @doc ~S"""
   Query by hash key, only one comparison in `:where` expression that will be converted to function call
   """
@@ -44,7 +44,7 @@ defmodule Exddb.Query do
       query_by_hashkey(unquote(module), unquote(expr_var_field), unquote(expect_field_value), unquote(compare_op), unquote(opts))
     end
   end
-  
+
   def evaluate_query_part({op, _, [{{:., _, [_expr_var, expr_var_field]}, _, []}, [{:.., _, [range_start, range_end]}]]}, module) do
     quote do
       build_query_part(unquote(module), unquote(expr_var_field), unquote(range_start), unquote(range_end), unquote(op))
@@ -65,14 +65,15 @@ defmodule Exddb.Query do
   """
   def query_by_hashkey(module, field, value, op, opts) do
     key_field = module.__schema__(:key)
-    if field != key_field do
-      raise ArgumentError, "#{inspect field} is not the hash_key field! They key field is #{inspect key_field}"
+    case key_field do
+      {hash, range} ->
+            %QueryObject{query: build_query_part(module, hash, value, op), model: module, options: opts}
+      _ -> %QueryObject{query: build_query_part(module, field, value, op), model: module, options: opts}
     end
-    %QueryObject{query: build_query_part(module, key_field, value, op), model: module, options: opts}
   end
 
   @doc ~S"""
-  
+
   """
   def query_by_range(module, query, opts) do
     %QueryObject{query: query, model: module, options: opts}
