@@ -84,21 +84,20 @@ defmodule Exddb.Query do
   def build_query_part(module, field, value, op) do
     field_type = module.__schema__(:field, field)
     encoded_value = field_type |> Exddb.Type.dump(value)
-    {Atom.to_string(field), {Exddb.Type.dynamo_type(field_type), encoded_value}, comparison_to_atom(op)}
+    {Atom.to_string(field), {Exddb.Type.dynamo_type(field_type), encoded_value}, dynamize_op(op)}
   end
   def build_query_part(module, field, range_start, range_end, op) do
     field_type = module.__schema__(:field, field)
     encoded_value1 = field_type |> Exddb.Type.dump(range_start)
     encoded_value2 = field_type |> Exddb.Type.dump(range_end)
-    {Atom.to_string(field), {{Exddb.Type.dynamo_type(field_type), encoded_value1}, {Exddb.Type.dynamo_type(field_type), encoded_value2}}, comparison_to_atom(op)}
+    {Atom.to_string(field), {{Exddb.Type.dynamo_type(field_type), encoded_value1}, {Exddb.Type.dynamo_type(field_type), encoded_value2}}, dynamize_op(op)}
   end
 
-  # :==:eq,:le,:lt,:ge,:gt,:begins_with
-  def comparison_to_atom(:==), do: :eq
-  def comparison_to_atom(:<=), do: :le
-  def comparison_to_atom(:<), do: :lt
-  def comparison_to_atom(:>), do: :gt
-  def comparison_to_atom(:>=), do: :ge
-  def comparison_to_atom(:in), do: :between
+  def dynamize_op(:==), do: :eq
+  def dynamize_op(:<=), do: :le
+  def dynamize_op(:<), do: :lt
+  def dynamize_op(:>), do: :gt
+  def dynamize_op(:>=), do: :ge
+  def dynamize_op(:in), do: :between
 
 end
