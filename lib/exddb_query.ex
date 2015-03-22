@@ -1,6 +1,11 @@
 defmodule Exddb.Query do
 	@moduledoc ~S"""
+
 	Simple language integrated query for DynamoDB tables
+
+  Queries are parsed to function calls to this module which return tuple like `{<<"ForumName">>, {s, <<"Amazon DynamoDB">>}}`
+  which in turn erlclouds' ddb2 will understand.
+
 	"""
 
   defmacro __using__(_opts) do
@@ -9,6 +14,9 @@ defmodule Exddb.Query do
     end
   end
 
+  @doc ~S"""
+  This structure is used to store a query in the form its passed to erlcloud and metadata about the query.
+  """
   defmodule QueryObject do
     defstruct model: nil, query: {}, options: []
   end
@@ -30,9 +38,11 @@ defmodule Exddb.Query do
   Query by hash and range key
   """
   def evaluate_where({:and, _, ops}, _var, module, opts) when is_list(ops) do
+    # first convert the query to AST
     quoted = Enum.map(ops, fn(op) -> evaluate_query_part(op, module) end)
+    # then return AST for building QueryObject struct
     quote do
-      query_by_range(unquote(module), unquote(quoted), unquote(opts))
+      %QueryObject{query: unquote(quoted), model: unquote(module), options: unquote(opts)}
     end
   end
 
@@ -61,7 +71,7 @@ defmodule Exddb.Query do
   #
 
   @doc ~S"""
-  Query by hash key, will try to build a tuple like this `#{<<"ForumName">>, {s, <<"Amazon DynamoDB">>}}`
+  Query by hash key, will try to build a tuple like this `{<<"ForumName">>, {s, <<"Amazon DynamoDB">>}}`
   """
   def query_by_hashkey(module, field, value, op, opts) do
     key_field = module.__schema__(:key)
@@ -69,13 +79,6 @@ defmodule Exddb.Query do
       {hash, _range} -> %QueryObject{query: build_query_part(module, hash, value, op), model: module, options: opts}
       _ -> %QueryObject{query: build_query_part(module, field, value, op), model: module, options: opts}
     end
-  end
-
-  @doc ~S"""
-
-  """
-  def query_by_range(module, query, opts) do
-    %QueryObject{query: query, model: module, options: opts}
   end
 
   def build_query_part(module, field, value, op) do
