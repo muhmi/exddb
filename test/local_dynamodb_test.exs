@@ -66,12 +66,27 @@ defmodule LocalDynamoDBTest do
     assert res != :ok
   end
 
-  #@tag :local_dynamo
-  #test "range" do
-  #  res = RemoteRepo.create_table(ModelWithHashAndRange)
-  #  assert res == :ok
-  #  res = RemoteRepo.delete_table(ModelWithHashAndRange)
-  #  assert res == :ok
-  #end
+  @tag :local_dynamo
+  test "range" do
+    record = ModelWithHashAndRange.new data_id: new_id, timestamp: 100, content: "trololoo"
+    {res, r} = RemoteRepo.insert(record)
+    assert res == :ok
+    {res, _} = RemoteRepo.insert(record)
+    assert res != :ok
+    {res, _} = RemoteRepo.update(record)
+    assert res == :ok
+
+    {res, read_record} = RemoteRepo.find(ModelWithHashAndRange, {record.data_id, record.timestamp})
+    assert res == :ok
+
+    assert read_record.data_id == record.data_id
+    assert read_record.timestamp == record.timestamp
+    assert read_record.content == record.content
+
+    {res, _} = RemoteRepo.delete(record)
+    assert res == :ok
+  end
+
+  def new_id, do: :crypto.hash(:md5, :calendar.universal_time |> inspect) |> Base.encode16
 
 end

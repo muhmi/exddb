@@ -136,10 +136,23 @@ defmodule Exddb.Repo do
   def delete(adapter, table_name, record, conditional_op \\ nil) do
     if conditional_op == nil, do: conditional_op = conditional_op(exist: record)
     {model, key} = metadata(record)
+    delete(adapter, table_name, model, key, record, conditional_op)
+  end
+  def delete(adapter, table_name, model, {key, range}, record, conditional_op) do
+    key_val = model.__schema__(:field, key) |> Exddb.Type.dump(Map.get(record, key))
+    range_val = model.__schema__(:field, range) |> Exddb.Type.dump(Map.get(record, range))
+    adapter.delete_item(table_name, [{to_string(key), key_val}, {to_string(range), range_val}], conditional_op) 
+    |> parse_delete_resp(record)
+  end
+  def delete(adapter, table_name, model, key, record, conditional_op) do
     key_type = model.__schema__(:field, key)
     value = Map.get(record, key)
     encoded_id = Exddb.Type.dump(key_type, value)
-    case adapter.delete_item(table_name, {to_string(key), encoded_id}, conditional_op) do
+    adapter.delete_item(table_name, {to_string(key), encoded_id}, conditional_op)
+    |> parse_delete_resp(record)
+  end
+  def parse_delete_resp(res, record) do
+    case res do
       {:ok, nil} -> {:ok, record}
       {:ok, []} -> {:ok, record}
       {:error, error} ->  {:error, error}
@@ -150,6 +163,17 @@ defmodule Exddb.Repo do
   @spec find(adapter :: Exddb.Adapter.t, table_name :: String.t, model :: Exddb.Model.t, record_id :: :any) :: {:ok, Exddb.Model.t} | :not_found | {:error, :any}
   def find(adapter, table_name, model, record_id) do
     key = model.__schema__(:key)
+    find(adapter, table_name, model, key, record_id)
+  end
+  def find(adapter, table_name, model, {hash, range}, {hash_id, range_val}) do
+    encoded_hash = model.__schema__(:field, hash) |> Exddb.Type.dump(hash_id)
+    encoded_range = model.__schema__(:field, range) |> Exddb.Type.dump(range_val)
+    case adapter.get_item(table_name, [{to_string(hash), encoded_hash}, {to_string(range), encoded_range}]) do
+      {:ok, []} -> :not_found
+      {:ok, item} -> {:ok, Exddb.Type.parse(item, model.new)}
+    end
+  end
+  def find(adapter, table_name, model, key, record_id) when is_atom(key) do
     key_type = model.__schema__(:field, key)
     encoded_id = Exddb.Type.dump(key_type, record_id)
     case adapter.get_item(table_name, {to_string(key), encoded_id}) do
