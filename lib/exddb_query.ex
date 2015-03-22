@@ -6,6 +6,17 @@ defmodule Exddb.Query do
   Queries are parsed to function calls to this module which return tuple like `{<<"ForumName">>, {s, <<"Amazon DynamoDB">>}}`
   which in turn erlclouds' ddb2 will understand.
 
+  # Examples
+
+      iex> from r in TestModel, where: r.data_id == "post"
+      %Exddb.Query.QueryObject{model: TestModel, options: [], query: {"data_id", {:s, "post"}, :eq}}
+
+      iex> from r in ModelWithHashAndRange, where: r.data_id == "post" and r.timestamp == 10
+      %Exddb.Query.QueryObject{model: ModelWithHashAndRange, options: [], query: [{"data_id", {:s, "post"}, :eq}, {"timestamp", {:n, 10}, :eq}]}
+
+  In the examples above the `query` and `options` is what will be sent to `erlcloud_ddb2`.
+  Model is used to determine which DynamoDB table should be queried and how the results should be deserialized.
+
 	"""
 
   defmacro __using__(_opts) do

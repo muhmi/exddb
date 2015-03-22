@@ -4,6 +4,8 @@ defmodule QueryBuilderTests do
   use ExUnit.Case
   use Exddb.Query
 
+  @doctest Exddb.Query
+
   test "Build simple hash key comparison" do
     query = from r in TestModel, where: r.data_id == "post"
     assert %Exddb.Query.QueryObject{model: TestModel, query: {"data_id", {:s, "post"}, :eq}} == query
