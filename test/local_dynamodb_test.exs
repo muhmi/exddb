@@ -86,6 +86,7 @@ defmodule LocalDynamoDBTest do
     assert res == :ok
   end
 
+  @tag :local_dynamo
   test "query" do
 
     for n <- 1..20 do
