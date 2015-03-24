@@ -98,7 +98,7 @@ defmodule LocalRepoTest do
   end
 
   test "binary" do
-    record = TestModel.new data_id: "111", data: "trololoollelelre"
+    record = TestModel.new data_id: new_id, data: "trololoollelelre"
     {res, _} = LocalRepo.insert(record)
     assert res == :ok
     {res, read_record} = LocalRepo.find(TestModel, record.data_id)
@@ -109,7 +109,7 @@ defmodule LocalRepoTest do
   end
 
   test "insert" do
-    record = TestModel.new data_id: "112121", data: "trololoollelelre"
+    record = TestModel.new data_id: new_id, data: "trololoollelelre"
     {res, _} = LocalRepo.insert(record)
     assert res == :ok
     {res, _} = LocalRepo.insert(record)
@@ -119,7 +119,7 @@ defmodule LocalRepoTest do
   end
 
   test "update" do
-    record = TestModel.new data_id: "2", data: "trololoollelelre"
+    record = TestModel.new data_id: new_id, data: "trololoollelelre"
     {res, _} = LocalRepo.update(record)
     assert res != :ok
     {res, _} = LocalRepo.insert(record)
@@ -129,7 +129,7 @@ defmodule LocalRepoTest do
   end
 
   test "delete" do
-    record = TestModel.new data_id: "1", data: "trololoollelelre"
+    record = TestModel.new data_id: new_id, data: "trololoollelelre"
     {res, _} = LocalRepo.insert(record)
     assert res == :ok
     {res, _} = LocalRepo.delete(record)
@@ -139,7 +139,7 @@ defmodule LocalRepoTest do
   end
 
   test "query" do
-    record = TestModel.new data_id: "1", data: "trololoollelelre"
+    record = TestModel.new data_id: new_id, data: "trololoollelelre"
     
     {res, _} = LocalRepo.insert(record)
     assert res == :ok
@@ -151,14 +151,18 @@ defmodule LocalRepoTest do
 
     assert record.data_id == data.data_id
 
+    post_id = new_id
+
     for n <- 1..10 do
-      {res, _} = LocalRepo.insert(TestModelRange.new(data_id: "1", number: n))
+      {res, _} = LocalRepo.insert(TestModelRange.new(data_id: post_id, number: n))
       assert res == :ok
     end
 
-    {res, results} = LocalRepo.query(from r in TestModelRange, where: r.data_id == record.data_id and r.number <= 5)
+    {res, results} = LocalRepo.query(from r in TestModelRange, where: r.data_id == post_id and r.number <= 5)
     assert res == :ok
     assert Enum.count(results) == 5
   end
+
+  def new_id, do: :crypto.hash(:md5, :calendar.universal_time |> inspect) |> Base.encode16
 
 end
