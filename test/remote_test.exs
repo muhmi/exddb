@@ -9,7 +9,6 @@ defmodule RemoteRepoTest do
   alias Test.ModelWithHashAndRange
 
   setup_all do
-    IO.puts("HERE")
     Application.put_env(:exddb, :use_local_dynamodb, false, persistent: true)
     :ok
   end
@@ -115,6 +114,12 @@ defmodule RemoteRepoTest do
     assert res == :ok
 
     assert Enum.count(results) == 10
+
+    for n <- 1..20 do
+        record = ModelWithHashAndRange.new data_id: post_id, timestamp: n
+        {res, _record} = RemoteRepo.delete(record)
+        assert res == :ok
+    end
 
   end
 
