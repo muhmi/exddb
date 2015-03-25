@@ -13,7 +13,7 @@ defmodule Exddb.AWSConfig do
       secret_access_key: 'nothing'
     )
   end
-  def get_config(false), do: :erlcloud_aws.default_config
+  def get_config(_), do: :erlcloud_aws.default_config
 
   def resolve_host, do: resolve_host(System.get_env("DOCKER_HOST"))
   def resolve_host(nil),  do: 'localhost'
