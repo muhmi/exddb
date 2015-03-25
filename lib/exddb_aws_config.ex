@@ -1,15 +1,19 @@
-# Source https://github.com/adamkittelson/ddbmodel/blob/master/test/local_dynamo_config.exs
-defmodule LocalDynamoConfig do
+defmodule Exddb.AWSConfig do
   require Record
 
   Record.defrecord :aws_config, Record.extract(:aws_config, from_lib: "erlcloud/include/erlcloud_aws.hrl")
 
   def get do
-    aws_config(ddb_scheme: 'http://', ddb_host: resolve_host, ddb_port: 8000, 
+    get_config(Application.get_env(:exddb, :use_local_dynamodb))
+  end
+
+  def get_config(true) do
+    aws_config(ddb_scheme: 'http://', ddb_host: resolve_host, ddb_port: 8000,
       access_key_id: 'nothing',
       secret_access_key: 'nothing'
     )
   end
+  def get_config(false), do: aws_config
 
   def resolve_host, do: resolve_host(System.get_env("DOCKER_HOST"))
   def resolve_host(nil),  do: 'localhost'

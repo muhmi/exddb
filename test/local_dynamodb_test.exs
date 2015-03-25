@@ -1,21 +1,15 @@
-Code.require_file "../local_dynamo_config.exs", __ENV__.file
-Code.require_file "../dynamodb_repo.exs", __ENV__.file
 
 defmodule LocalDynamoDBTest do
- use ExUnit.Case
+  use ExUnit.Case
 
   use Exddb.ConditionalOperation
   use Exddb.Query
 
-  setup_all do
-    :ssl.start()
-    :erlang.put(:aws_config, LocalDynamoConfig.get())
-    :erlcloud.start()
-    RemoteRepo.create_table(TestModel)
-    :ok
-  end
+  alias Test.RemoteRepo
+  alias Test.TestModel
+  alias Test.ModelWithHashAndRange
 
-  @tag :local_dynamo
+  @tag :local
   test "crud" do
     now = :calendar.datetime_to_gregorian_seconds(:calendar.universal_time)
     record = TestModel.new data_id: to_string(now), data: "trololoollelelre", truth: true
@@ -66,10 +60,10 @@ defmodule LocalDynamoDBTest do
     assert res != :ok
   end
 
-  @tag :local_dynamo
+  @tag :local
   test "range" do
     record = ModelWithHashAndRange.new data_id: new_id, timestamp: 100, content: "trololoo"
-    {res, r} = RemoteRepo.insert(record)
+    {res, _r} = RemoteRepo.insert(record)
     assert res == :ok
     {res, _} = RemoteRepo.insert(record)
     assert res != :ok
@@ -86,14 +80,14 @@ defmodule LocalDynamoDBTest do
     assert res == :ok
   end
 
-  @tag :local_dynamo
+  @tag :local
   test "query" do
 
     post_id = new_id
 
     for n <- 1..20 do
         record = ModelWithHashAndRange.new data_id: post_id, timestamp: n, content: "trololoo"
-        {res, record} = RemoteRepo.insert(record)
+        {res, _record} = RemoteRepo.insert(record)
         assert res == :ok
     end
 
@@ -110,7 +104,7 @@ defmodule LocalDynamoDBTest do
     # Query by hash and range key
     {res, results} = RemoteRepo.query(
         from r in ModelWithHashAndRange,
-        where: r.data_id == "post" and r.timestamp > 10,
+        where: r.data_id == post_id and r.timestamp > 10,
         limit: 10
     )
     assert res == :ok

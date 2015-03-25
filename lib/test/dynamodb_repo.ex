@@ -1,9 +1,10 @@
-defmodule RemoteRepo do
+
+defmodule Test.RemoteRepo do
   use Exddb.Repo, adapter: Exddb.Adapters.DynamoDB,
                   table_name_prefix: "exddb_"
 end
 
-defmodule TestModel do
+defmodule Test.TestModel do
   use Exddb.Model
 
   @key :data_id
@@ -18,7 +19,7 @@ defmodule TestModel do
   end
 end
 
-defmodule ModelWithHashAndRange do
+defmodule Test.ModelWithHashAndRange do
   use Exddb.Model
 
   @key {:data_id, :timestamp}

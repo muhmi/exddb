@@ -65,9 +65,9 @@ I run it inside a [Docker container](https://registry.hub.docker.com/u/deangiber
 
 	$  docker run -d -p 8000:8000 --name dynamodb deangiberson/aws-dynamodb-local
 
-Then run tests with
+Then run tests with the local DynamoDB
 
-	$ mix test --include local_dynamo
+	$ mix test --only local
 
 
 Running tests using AWS
@@ -76,7 +76,7 @@ Running tests using AWS
 To run tests using DynamoDB on your AWS account:
 
 ```elixir
-$ mix test --include external
+$ mix test --only require_aws
 ```
 
 

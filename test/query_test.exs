@@ -1,8 +1,10 @@
-Code.require_file "../dynamodb_repo.exs", __ENV__.file
 
 defmodule QueryBuilderTests do
   use ExUnit.Case
   use Exddb.Query
+
+  alias Test.TestModel
+  alias Test.ModelWithHashAndRange
 
   @doctest Exddb.Query
 

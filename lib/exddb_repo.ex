@@ -26,6 +26,7 @@ defmodule Exddb.Repo do
 
   defcallback create_table(model :: Exddb.Repo.t, write_units :: integer, read_units :: integer) :: :ok | :any
   defcallback delete_table(model :: Exddb.Repo.t) :: :ok | :any
+  defcallback list_tables(options :: []) :: :any
 
   defcallback insert(record :: Exddb.Model.t) :: return_ok_item
   defcallback update(record :: Exddb.Model.t) :: return_ok_item
@@ -54,6 +55,8 @@ defmodule Exddb.Repo do
           error -> error
         end
       end
+
+      def list_tables(options \\ []), do: @adapter.list_tables(options)
 
       def insert(record, conditional_op \\ nil), do: insert(@adapter, table_name(record), record, conditional_op)
 
