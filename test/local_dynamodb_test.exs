@@ -89,16 +89,18 @@ defmodule LocalDynamoDBTest do
   @tag :local_dynamo
   test "query" do
 
+    post_id = new_id
+
     for n <- 1..20 do
-        record = ModelWithHashAndRange.new data_id: "post", timestamp: n, content: "trololoo"
-        {res, _r} = RemoteRepo.insert(record)
+        record = ModelWithHashAndRange.new data_id: post_id, timestamp: n, content: "trololoo"
+        {res, record} = RemoteRepo.insert(record)
         assert res == :ok
     end
 
     # Query by hash key only, use limit
     {res, results} = RemoteRepo.query(
         from r in ModelWithHashAndRange,
-        where: r.data_id == "post",
+        where: r.data_id == post_id,
         limit: 10
     )
     assert res == :ok

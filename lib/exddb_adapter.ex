@@ -12,7 +12,6 @@ defmodule Exddb.Adapter do
   defcallback create_table(table_name :: String.t, key_spec :: String.t, key :: term, write_units :: integer, read_units :: integer) :: no_return
   defcallback delete_table(table_name :: String.t) :: no_return
 
-  defcallback put_item(table_name :: String.t, key_spec :: term, item :: term) :: return_ok
   defcallback put_item(table_name :: String.t, key_spec :: term, item :: term, expect_clause :: term) :: return_ok
 
   defcallback query(table_name :: String.t, key_conditions :: term, options :: term) :: return_ok

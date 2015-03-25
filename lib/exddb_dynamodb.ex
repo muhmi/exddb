@@ -10,10 +10,6 @@ defmodule Exddb.Adapters.DynamoDB do
     :erlcloud_ddb2.delete_table(table_name)
   end
 
-  def put_item(table_name, _key, item) do
-    :erlcloud_ddb2.put_item(table_name, item)
-  end
-
   def put_item(table_name, _key, item, conditional_op) do
     :erlcloud_ddb2.put_item(table_name, item, conditional_op)
   end
