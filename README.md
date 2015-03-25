@@ -45,8 +45,7 @@ Setup a repository
 All database operations are done through a repository module.
 ```elixir
 defmodule MyShopApp.Repo do
-  use Exddb.Repo, adapter: Exddb.Adapters.DynamoDB,
-                  table_name_prefix: "shopdb_"
+  use Exddb.Repo, table_name_prefix: "shopdb_"
 end
 ```
 Using the repository:
