@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.ListTables do
+defmodule Mix.Tasks.Exddb.ListTables do
   use Mix.Task
 
   alias Test.RemoteRepo
