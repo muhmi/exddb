@@ -34,6 +34,8 @@ defmodule Exddb.Type do
   def parse(:atom, {:s, v}), do: String.to_atom(v)
   def parse(:string, {:s, v}), do: v
   def parse(:string, v) when is_binary(v), do: v
+  # field not found in model, but stored in db
+  def parse(nil, v), do: v
 
   def dump(%{} = record) do
     module = record.__struct__
