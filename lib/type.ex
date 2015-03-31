@@ -10,8 +10,11 @@ defmodule Exddb.Type do
   def parse([{key, value}|rest], %{} = to_struct) when is_binary(key) do
     module = to_struct.__struct__
     key = String.to_atom(key)
-    value = parse(module.__schema__(:field, key), value)
-    to_struct = Map.put(to_struct, key, value)
+    field_type = module.__schema__(:field, key)
+    if field_type != nil do
+      value = parse(field_type, value)
+      to_struct = Map.put(to_struct, key, value)
+    end
     parse(rest, to_struct)
   end
   def parse([], to_struct), do: to_struct
