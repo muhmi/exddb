@@ -10,7 +10,7 @@ defmodule Exddb.Type do
   def parse([{key, value}|rest], %{} = to_struct) when is_binary(key) do
     module = to_struct.__struct__
     key = String.to_atom(key)
-    field_type = module.__schema__(:field, key)
+    field_type = module.schema(:field, key)
     if field_type != nil do
       value = parse(field_type, value)
       to_struct = Map.put(to_struct, key, value)
@@ -42,9 +42,9 @@ defmodule Exddb.Type do
 
   def dump(%{} = record) do
     module = record.__struct__
-    for f <- module.__schema__(:fields) do
+    for f <- module.schema(:fields) do
       if Map.get(record, f) != nil do 
-        {Atom.to_string(f), dump(module.__schema__(:field, f), Map.get(record, f))}
+        {Atom.to_string(f), dump(module.schema(:field, f), Map.get(record, f))}
       end
     end |> Enum.filter(fn(kv) -> kv != nil end)
   end

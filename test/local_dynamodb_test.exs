@@ -1,6 +1,6 @@
 
 defmodule LocalDynamoDBTest do
-  use ExUnit.Case
+   use ExUnit.Case, async: false
 
   use Exddb.ConditionalOperation
   use Exddb.Query
@@ -8,6 +8,19 @@ defmodule LocalDynamoDBTest do
   alias Test.RemoteRepo
   alias Test.TestModel
   alias Test.ModelWithHashAndRange
+
+  setup_all do
+    Application.put_env :exddb, :erlcloud_config, Exddb.AWS.Config.Localhost, persistent: true
+
+    case RemoteRepo.list_tables() do
+        {:ok, ["exddb_testmodel", "exddb_testmodel_range"]} -> :ok
+        _any -> 
+          RemoteRepo.create_table(TestModel)
+          RemoteRepo.create_table(ModelWithHashAndRange)
+    end
+
+    :ok
+  end
 
   @tag :local
   test "crud" do
@@ -86,16 +99,16 @@ defmodule LocalDynamoDBTest do
     post_id = new_id
 
     for n <- 1..20 do
-        record = ModelWithHashAndRange.new data_id: post_id, timestamp: n, content: "trololoo"
-        {res, _record} = RemoteRepo.insert(record)
-        assert res == :ok
+      record = ModelWithHashAndRange.new data_id: post_id, timestamp: n, content: "trololoo"
+      {res, _record} = RemoteRepo.insert(record)
+      assert res == :ok
     end
 
     # Query by hash key only, use limit
     {res, results} = RemoteRepo.query(
-        from r in ModelWithHashAndRange,
-        where: r.data_id == post_id,
-        limit: 10
+      from r in ModelWithHashAndRange,
+      where: r.data_id == post_id,
+      limit: 10
     )
     assert res == :ok
 
@@ -103,9 +116,9 @@ defmodule LocalDynamoDBTest do
 
     # Query by hash and range key
     {res, results} = RemoteRepo.query(
-        from r in ModelWithHashAndRange,
-        where: r.data_id == post_id and r.timestamp > 10,
-        limit: 10
+      from r in ModelWithHashAndRange,
+      where: r.data_id == post_id and r.timestamp > 10,
+      limit: 10
     )
     assert res == :ok
 

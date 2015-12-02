@@ -102,7 +102,7 @@ defmodule Exddb.ConditionalOperation do
 
   def expect_not_exists(record) do
     model = record.__struct__
-    key_type = model.__schema__(:key)
+    key_type = model.schema(:key)
     case key_type do
       {hash, range} -> [[{Atom.to_string(hash), :null}, {Atom.to_string(range), :null}]]
       hash -> {Atom.to_string(hash), :null}
@@ -111,16 +111,16 @@ defmodule Exddb.ConditionalOperation do
 
   def expect_exists(record) do
     model = record.__struct__
-    key_spec = model.__schema__(:key)
+    key_spec = model.schema(:key)
     expect_exists(model, key_spec, record)
   end
   def expect_exists(model, {hash, range}, record) do
-    hash_value =  model.__schema__(:field, hash) |> dump(Map.get(record, hash))
-    range_value = model.__schema__(:field, range) |> dump(Map.get(record, range))
+    hash_value =  model.schema(:field, hash) |> dump(Map.get(record, hash))
+    range_value = model.schema(:field, range) |> dump(Map.get(record, range))
     [{Atom.to_string(hash), hash_value, :eq}, {Atom.to_string(range), range_value, :eq}]
   end
   def expect_exists(model, hash, record) do
-    hash_value =  model.__schema__(:field, hash) |> dump(Map.get(record, hash))
+    hash_value =  model.schema(:field, hash) |> dump(Map.get(record, hash))
     {Atom.to_string(hash), hash_value, :eq}
   end
 

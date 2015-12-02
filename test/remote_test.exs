@@ -1,5 +1,5 @@
 defmodule RemoteRepoTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   use Exddb.ConditionalOperation
   use Exddb.Query
@@ -9,7 +9,13 @@ defmodule RemoteRepoTest do
   alias Test.ModelWithHashAndRange
 
   setup_all do
-    Application.put_env(:exddb, :use_local_dynamodb, false, persistent: true)
+    Application.put_env :exddb, :erlcloud_config, Exddb.AWS.Config.Default, persistent: true
+    case RemoteRepo.list_tables() do
+        {:ok, ["exddb_testmodel", "exddb_testmodel_range"]} -> :ok
+        _any -> 
+          RemoteRepo.create_table(TestModel)
+          RemoteRepo.create_table(ModelWithHashAndRange)
+    end
     :ok
   end
 
@@ -90,16 +96,16 @@ defmodule RemoteRepoTest do
     post_id = new_id
 
     for n <- 1..20 do
-        record = ModelWithHashAndRange.new data_id: post_id, timestamp: n, content: "trololoo"
-        {res, _record} = RemoteRepo.insert(record)
-        assert res == :ok
+      record = ModelWithHashAndRange.new data_id: post_id, timestamp: n, content: "trololoo"
+      {res, _record} = RemoteRepo.insert(record)
+      assert res == :ok
     end
 
     # Query by hash key only, use limit
     {res, results} = RemoteRepo.query(
-        from r in ModelWithHashAndRange,
-        where: r.data_id == post_id,
-        limit: 10
+      from r in ModelWithHashAndRange,
+      where: r.data_id == post_id,
+      limit: 10
     )
     assert res == :ok
 
@@ -107,18 +113,18 @@ defmodule RemoteRepoTest do
 
     # Query by hash and range key
     {res, results} = RemoteRepo.query(
-        from r in ModelWithHashAndRange,
-        where: r.data_id == post_id and r.timestamp > 10,
-        limit: 10
+      from r in ModelWithHashAndRange,
+      where: r.data_id == post_id and r.timestamp > 10,
+      limit: 10
     )
     assert res == :ok
 
     assert Enum.count(results) == 10
 
     for n <- 1..20 do
-        record = ModelWithHashAndRange.new data_id: post_id, timestamp: n
-        {res, _record} = RemoteRepo.delete(record)
-        assert res == :ok
+      record = ModelWithHashAndRange.new data_id: post_id, timestamp: n
+      {res, _record} = RemoteRepo.delete(record)
+      assert res == :ok
     end
 
   end

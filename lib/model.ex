@@ -22,21 +22,17 @@ defmodule Exddb.Model do
 
       end
   
-  Now we know that there is a table called `receipts` (`Exddb.Repo` will add its prefix to this name) and 
-  how to convert items back and forth.
+  Here each `field` is assumed to allow null values, unless you specify `null: false`. 
 
-  Each `field` is assumed to allow null values, unless you specify `null: false`. 
-
-  Note: When converting items from structs `[{key, value}, ...]` lists values containing nulls will be 
-  __removed__ from resulting item.
+  Nulls will not be stored in DynamoDB or kept in the model data.
 
   """
-  use Behaviour
 
   @type t :: module
 
-  defcallback __schema__(t :: term) :: no_return
-  defcallback __parse__(t :: term) :: Exddb.Model.t
+  @callback schema(t :: term) :: no_return
+  @callback dump(model :: Exddb.Model.t) :: []
+  @callback parse(t :: term) :: Exddb.Model.t
 
   defmacro __using__(_) do
     quote do
@@ -65,52 +61,56 @@ defmodule Exddb.Model do
       struct_fields = @struct_fields |> Enum.reverse
       model_fields = @model_fields |> Enum.reverse
 
+      # Generate code for the module
       Module.eval_quoted __MODULE__, [
-        Exddb.Model.__access__,
-        Exddb.Model.__struct__(struct_fields),
-        Exddb.Model.__fields__(model_fields),
-        Exddb.Model.__key__(@key),
-        Exddb.Model.__new__,
-        Exddb.Model.__table_name__(@table_name),
-        Exddb.Model.__nulls__(@allow_null, @key),
-        Exddb.Model.__convert__,
-        Exddb.Model.__validate__
+        Exddb.Model.generate_setters,
+        Exddb.Model.generate_struct(struct_fields),
+        Exddb.Model.generate_field_schemas(model_fields),
+        Exddb.Model.generate_key_schema(@key),
+        Exddb.Model.generate_new,
+        Exddb.Model.generate_table_name(@table_name),
+        Exddb.Model.generate_schema_null_checks(@allow_null, @key),
+        Exddb.Model.generate_type_conversions,
+        Exddb.Model.generate_validation
       ]
 
     end
   end
 
+  @doc ~S"""
+  Define a field. For example `field :receipt_id, :string`
+  """
   defmacro field(name, type \\ :string, opts \\ []) do
     quote do
-      Exddb.Model.__field__(__MODULE__, unquote(name), unquote(type), unquote(opts))
+      Exddb.Model.define_field(__MODULE__, unquote(name), unquote(type), unquote(opts))
     end
   end
 
-  def __field__(module, name, :integer, []) do
-    __field__(module, name, :integer, [default: 0])
+  def define_field(module, name, :integer, []) do
+    define_field(module, name, :integer, [default: 0])
   end
 
-  def __field__(module, name, :boolean, []) do
-    __field__(module, name, :boolean, [default: false])
+  def define_field(module, name, :boolean, []) do
+    define_field(module, name, :boolean, [default: false])
   end
 
-  def __field__(module, name, :float, []) do
-    __field__(module, name, :float, [default: 0.0])
+  def define_field(module, name, :float, []) do
+    define_field(module, name, :float, [default: 0.0])
   end
 
-  def __field__(module, name, type, opts) do
+  def define_field(module, name, type, opts) do
     Module.put_attribute(module, :struct_fields, {name, opts[:default]})
     Module.put_attribute(module, :model_fields, {name, type})
     Module.put_attribute(module, :allow_null, {name, Keyword.get(opts, :null, true)})
   end
 
-  def __struct__(struct_fields) do
+  def generate_struct(struct_fields) do
     quote do
       defstruct unquote(Macro.escape(struct_fields))
     end
   end
 
-  def __new__ do
+  def generate_new do
     quote do
       def new(attributes \\ []) do
         defaults = __struct__
@@ -125,7 +125,7 @@ defmodule Exddb.Model do
     end
   end
 
-  def __access__ do
+  def generate_setters do
     quote do
       def set(item, attributes \\ []) do
         defaults = __struct__
@@ -140,55 +140,55 @@ defmodule Exddb.Model do
     end
   end
 
-  def __key__(name) do
+  def generate_key_schema(name) do
     quote do
-      def __schema__(:key), do: unquote(name)
+      def schema(:key), do: unquote(name)
     end
   end
 
-  def __nulls__(fields, key) do
+  def generate_schema_null_checks(fields, key) do
     Enum.map(fields, fn {name, allow_null} ->
       if name == key do
         quote do
-          def __schema__(:null, unquote(name)), do: false
+          def schema(:null, unquote(name)), do: false
         end
       else
         quote do
-          def __schema__(:null, unquote(name)), do: unquote(allow_null)
+          def schema(:null, unquote(name)), do: unquote(allow_null)
         end
       end
     end)
   end
 
-  def __fields__(fields) do
+  def generate_field_schemas(fields) do
     quoted = Enum.map(fields, fn {name, type} ->
       quote do
-        def __schema__(:field, unquote(name)), do: unquote(type)
+        def schema(:field, unquote(name)), do: unquote(type)
       end
     end)
 
     field_names = Enum.map(fields, &elem(&1, 0))
 
     quoted ++ [quote do
-      def __schema__(:field, _), do: nil
-      def __schema__(:fields), do: unquote(field_names)
+      def schema(:field, _), do: nil
+      def schema(:fields), do: unquote(field_names)
     end]
   end
 
-  def __convert__ do
+  def generate_type_conversions do
     quote do
-      def __parse__(record), do: Exddb.Type.parse(record, new)
-      def __dump__(record), do: Exddb.Type.dump(record)
+      def parse(record), do: Exddb.Type.parse(record, new)
+      def dump(record), do: Exddb.Type.dump(record)
     end
   end
 
-  def __table_name__(table_name) do
+  def generate_table_name(table_name) do
     quote do
-      def __schema__(:table_name), do: unquote(table_name)
+      def schema(:table_name), do: unquote(table_name)
     end
   end
 
-  def __validate__ do
+  def generate_validation do
     quote do
       def __validate__(%{:__struct__ => module} = record) do
         if module != __MODULE__, do: raise(ArgumentError, "Cannot validate items of type #{module} with #{__MODULE__}")
@@ -197,8 +197,7 @@ defmodule Exddb.Model do
       def __validate__([:__struct__|rest], record), do: __validate__(rest, record)
       def __validate__([key|rest], record) do
         value = Map.get(record, key)
-        can_be_null = __schema__(:null, key)
-        if value == nil and not can_be_null do
+        if value == nil and not schema(:null, key) do
           {:error, "#{key} cannot be null!"}
         else
           __validate__(rest, record)
