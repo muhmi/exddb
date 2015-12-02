@@ -14,6 +14,3 @@ config :logger, :console,
   level: :debug,
   format: "$date $time [$level] $metadata$message\n",
   metadata: [:module, :line, :user_id]
-
-config :exddb,
-  debug_erlcloud_calls: true
