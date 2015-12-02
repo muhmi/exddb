@@ -5,7 +5,7 @@ Exddb
 
 Simple lightweight object mapper for DynamoDB and Elixir.
 
-*This is very much a work in progress, interfaces can and probably will change.*
+*This is a work in progress, interfaces can and probably will change. That is why its verison 0.x.x.*
 
 Opinionated Assumptions
 -----------------------
