@@ -1,6 +1,6 @@
 
 defmodule LocalDynamoDBTest do
-  use ExUnit.Case
+   use ExUnit.Case, async: false
 
   use Exddb.ConditionalOperation
   use Exddb.Query
@@ -8,6 +8,19 @@ defmodule LocalDynamoDBTest do
   alias Test.RemoteRepo
   alias Test.TestModel
   alias Test.ModelWithHashAndRange
+
+  setup_all do
+    Application.put_env :exddb, :erlcloud_config, Exddb.AWS.Config.Localhost, persistent: true
+
+    case RemoteRepo.list_tables() do
+        {:ok, ["exddb_testmodel", "exddb_testmodel_range"]} -> :ok
+        _any -> 
+            RemoteRepo.create_table(TestModel)
+            RemoteRepo.create_table(ModelWithHashAndRange)
+    end
+
+    :ok
+  end
 
   @tag :local
   test "crud" do

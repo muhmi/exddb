@@ -35,7 +35,7 @@ defmodule Exddb.Mixfile do
   end
 
   # Include some support code for :test
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test/support", "test/mix/tasks"]
   defp elixirc_paths(_), do: ["lib"]
 
 end

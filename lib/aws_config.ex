@@ -1,23 +1,14 @@
-defmodule Exddb.AWSConfig do
-  require Record
+defmodule Exddb.AWS.Config do
+  
+  @doc ~s"""
+  Return erlcloud config for exddb
+  """
+  @callback get_config() :: any
 
-  Record.defrecord :aws_config, Record.extract(:aws_config, from_lib: "erlcloud/include/erlcloud_aws.hrl")
-
-  def get do
-    get_config(Application.get_env(:exddb, :use_local_dynamodb))
+  def get_config do
+    impl.get_config
   end
 
-  def get_config(true) do
-    aws_config(ddb_scheme: 'http://', ddb_host: resolve_host, ddb_port: 8000,
-      access_key_id: 'nothing',
-      secret_access_key: 'nothing'
-    )
-  end
-  def get_config(_), do: :erlcloud_aws.default_config
-
-  def resolve_host, do: resolve_host(System.get_env("DOCKER_HOST"))
-  def resolve_host(nil),  do: 'localhost'
-  def resolve_host(docker_host) when is_binary(docker_host), do: resolve_host(Regex.scan(~r/[0-9+]+\.[0-9\.]+/, docker_host))
-  def resolve_host([[host]]), do: host |> String.to_char_list
+  def impl, do: Application.get_env(:exddb, :erlcloud_config, Exddb.AWS.Config.Default)
 
 end

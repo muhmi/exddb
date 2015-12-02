@@ -1,5 +1,5 @@
 defmodule RemoteRepoTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   use Exddb.ConditionalOperation
   use Exddb.Query
@@ -9,7 +9,13 @@ defmodule RemoteRepoTest do
   alias Test.ModelWithHashAndRange
 
   setup_all do
-    Application.put_env(:exddb, :use_local_dynamodb, false, persistent: true)
+    Application.put_env :exddb, :erlcloud_config, Exddb.AWS.Config.Default, persistent: true
+    case RemoteRepo.list_tables() do
+        {:ok, ["exddb_testmodel", "exddb_testmodel_range"]} -> :ok
+        _any -> 
+            RemoteRepo.create_table(TestModel)
+            RemoteRepo.create_table(ModelWithHashAndRange)
+    end
     :ok
   end
 
