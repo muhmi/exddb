@@ -64,52 +64,56 @@ defmodule Exddb.Model do
       struct_fields = @struct_fields |> Enum.reverse
       model_fields = @model_fields |> Enum.reverse
 
+      # Generate code for the module
       Module.eval_quoted __MODULE__, [
-        Exddb.Model.__access__,
-        Exddb.Model.__struct__(struct_fields),
-        Exddb.Model.__fields__(model_fields),
-        Exddb.Model.__key__(@key),
-        Exddb.Model.__new__,
-        Exddb.Model.__table_name__(@table_name),
-        Exddb.Model.__nulls__(@allow_null, @key),
-        Exddb.Model.__convert__,
-        Exddb.Model.__validate__
+        Exddb.Model.generate_setters,
+        Exddb.Model.generate_struct(struct_fields),
+        Exddb.Model.generate_field_schemas(model_fields),
+        Exddb.Model.generate_key_schema(@key),
+        Exddb.Model.generate_new,
+        Exddb.Model.generate_table_name(@table_name),
+        Exddb.Model.generate_schema_null_checks(@allow_null, @key),
+        Exddb.Model.generate_type_conversions,
+        Exddb.Model.generate_validation
       ]
 
     end
   end
 
+  @doc ~S"""
+  Define a field. For example `field :receipt_id, :string`
+  """
   defmacro field(name, type \\ :string, opts \\ []) do
     quote do
-      Exddb.Model.__field__(__MODULE__, unquote(name), unquote(type), unquote(opts))
+      Exddb.Model.define_field(__MODULE__, unquote(name), unquote(type), unquote(opts))
     end
   end
 
-  def __field__(module, name, :integer, []) do
-    __field__(module, name, :integer, [default: 0])
+  def define_field(module, name, :integer, []) do
+    define_field(module, name, :integer, [default: 0])
   end
 
-  def __field__(module, name, :boolean, []) do
-    __field__(module, name, :boolean, [default: false])
+  def define_field(module, name, :boolean, []) do
+    define_field(module, name, :boolean, [default: false])
   end
 
-  def __field__(module, name, :float, []) do
-    __field__(module, name, :float, [default: 0.0])
+  def define_field(module, name, :float, []) do
+    define_field(module, name, :float, [default: 0.0])
   end
 
-  def __field__(module, name, type, opts) do
+  def define_field(module, name, type, opts) do
     Module.put_attribute(module, :struct_fields, {name, opts[:default]})
     Module.put_attribute(module, :model_fields, {name, type})
     Module.put_attribute(module, :allow_null, {name, Keyword.get(opts, :null, true)})
   end
 
-  def __struct__(struct_fields) do
+  def generate_struct(struct_fields) do
     quote do
       defstruct unquote(Macro.escape(struct_fields))
     end
   end
 
-  def __new__ do
+  def generate_new do
     quote do
       def new(attributes \\ []) do
         defaults = __struct__
@@ -124,7 +128,7 @@ defmodule Exddb.Model do
     end
   end
 
-  def __access__ do
+  def generate_setters do
     quote do
       def set(item, attributes \\ []) do
         defaults = __struct__
@@ -139,13 +143,13 @@ defmodule Exddb.Model do
     end
   end
 
-  def __key__(name) do
+  def generate_key_schema(name) do
     quote do
       def __schema__(:key), do: unquote(name)
     end
   end
 
-  def __nulls__(fields, key) do
+  def generate_schema_null_checks(fields, key) do
     Enum.map(fields, fn {name, allow_null} ->
       if name == key do
         quote do
@@ -159,7 +163,7 @@ defmodule Exddb.Model do
     end)
   end
 
-  def __fields__(fields) do
+  def generate_field_schemas(fields) do
     quoted = Enum.map(fields, fn {name, type} ->
       quote do
         def __schema__(:field, unquote(name)), do: unquote(type)
@@ -174,20 +178,20 @@ defmodule Exddb.Model do
     end]
   end
 
-  def __convert__ do
+  def generate_type_conversions do
     quote do
       def __parse__(record), do: Exddb.Type.parse(record, new)
       def __dump__(record), do: Exddb.Type.dump(record)
     end
   end
 
-  def __table_name__(table_name) do
+  def generate_table_name(table_name) do
     quote do
       def __schema__(:table_name), do: unquote(table_name)
     end
   end
 
-  def __validate__ do
+  def generate_validation do
     quote do
       def __validate__(%{:__struct__ => module} = record) do
         if module != __MODULE__, do: raise(ArgumentError, "Cannot validate items of type #{module} with #{__MODULE__}")
