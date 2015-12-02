@@ -34,8 +34,9 @@ defmodule Exddb.Model do
 
   @type t :: module
 
-  @callback __schema__(t :: term) :: no_return
-  @callback __parse__(t :: term) :: Exddb.Model.t
+  @callback schema(t :: term) :: no_return
+  @callback dump(model :: Exddb.Model.t) :: []
+  @callback parse(t :: term) :: Exddb.Model.t
 
   defmacro __using__(_) do
     quote do
@@ -145,7 +146,7 @@ defmodule Exddb.Model do
 
   def generate_key_schema(name) do
     quote do
-      def __schema__(:key), do: unquote(name)
+      def schema(:key), do: unquote(name)
     end
   end
 
@@ -153,11 +154,11 @@ defmodule Exddb.Model do
     Enum.map(fields, fn {name, allow_null} ->
       if name == key do
         quote do
-          def __schema__(:null, unquote(name)), do: false
+          def schema(:null, unquote(name)), do: false
         end
       else
         quote do
-          def __schema__(:null, unquote(name)), do: unquote(allow_null)
+          def schema(:null, unquote(name)), do: unquote(allow_null)
         end
       end
     end)
@@ -166,28 +167,28 @@ defmodule Exddb.Model do
   def generate_field_schemas(fields) do
     quoted = Enum.map(fields, fn {name, type} ->
       quote do
-        def __schema__(:field, unquote(name)), do: unquote(type)
+        def schema(:field, unquote(name)), do: unquote(type)
       end
     end)
 
     field_names = Enum.map(fields, &elem(&1, 0))
 
     quoted ++ [quote do
-      def __schema__(:field, _), do: nil
-      def __schema__(:fields), do: unquote(field_names)
+      def schema(:field, _), do: nil
+      def schema(:fields), do: unquote(field_names)
     end]
   end
 
   def generate_type_conversions do
     quote do
-      def __parse__(record), do: Exddb.Type.parse(record, new)
-      def __dump__(record), do: Exddb.Type.dump(record)
+      def parse(record), do: Exddb.Type.parse(record, new)
+      def dump(record), do: Exddb.Type.dump(record)
     end
   end
 
   def generate_table_name(table_name) do
     quote do
-      def __schema__(:table_name), do: unquote(table_name)
+      def schema(:table_name), do: unquote(table_name)
     end
   end
 
@@ -200,8 +201,7 @@ defmodule Exddb.Model do
       def __validate__([:__struct__|rest], record), do: __validate__(rest, record)
       def __validate__([key|rest], record) do
         value = Map.get(record, key)
-        can_be_null = __schema__(:null, key)
-        if value == nil and not can_be_null do
+        if value == nil and not schema(:null, key) do
           {:error, "#{key} cannot be null!"}
         else
           __validate__(rest, record)

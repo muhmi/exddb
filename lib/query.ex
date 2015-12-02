@@ -85,7 +85,7 @@ defmodule Exddb.Query do
   Query by hash key, will try to build a tuple like this `{<<"ForumName">>, {s, <<"Amazon DynamoDB">>}}`
   """
   def query_by_hashkey(module, field, value, op, opts) do
-    key_field = module.__schema__(:key)
+    key_field = module.schema(:key)
     case key_field do
       {hash, _range} -> %QueryObject{query: build_query_part(module, hash, value, op), model: module, options: opts}
       _ -> %QueryObject{query: build_query_part(module, field, value, op), model: module, options: opts}
@@ -93,12 +93,12 @@ defmodule Exddb.Query do
   end
 
   def build_query_part(module, field, value, op) do
-    field_type = module.__schema__(:field, field)
+    field_type = module.schema(:field, field)
     encoded_value = field_type |> Exddb.Type.dump(value)
     {Atom.to_string(field), {Exddb.Type.dynamo_type(field_type), encoded_value}, dynamize_op(op)}
   end
   def build_query_part(module, field, range_start, range_end, op) do
-    field_type = module.__schema__(:field, field)
+    field_type = module.schema(:field, field)
     encoded_value1 = field_type |> Exddb.Type.dump(range_start)
     encoded_value2 = field_type |> Exddb.Type.dump(range_end)
     {Atom.to_string(field), {{Exddb.Type.dynamo_type(field_type), encoded_value1}, {Exddb.Type.dynamo_type(field_type), encoded_value2}}, dynamize_op(op)}
