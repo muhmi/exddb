@@ -22,13 +22,9 @@ defmodule Exddb.Model do
 
       end
   
-  Now we know that there is a table called `receipts` (`Exddb.Repo` will add its prefix to this name) and 
-  how to convert items back and forth.
+  Here each `field` is assumed to allow null values, unless you specify `null: false`. 
 
-  Each `field` is assumed to allow null values, unless you specify `null: false`. 
-
-  Note: When converting items from structs `[{key, value}, ...]` lists values containing nulls will be 
-  __removed__ from resulting item.
+  Nulls will not be stored in DynamoDB or kept in the model data.
 
   """
 
