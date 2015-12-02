@@ -29,8 +29,25 @@ defmodule Exddb.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:erlcloud, "~> 0.9.2"}
+      {:erlcloud, "~> 0.9.2"},
+      {:ex_doc, "~> 0.9", only: :dev},
+      {:earmark, ">= 0.0.0", only: :dev}
     ]
+  end
+
+   defp description do
+    """
+    Simple library for working with data in DynamoDB.
+    """
+  end
+
+  defp package do
+    [
+     files: ["lib", "mix.exs", "README*", "readme*", "LICENSE*", "license*"],
+     maintainers: ["Roope Kangas"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/muhmi/exddb"}
+   ]
   end
 
   # Include some support code for :test
