@@ -15,8 +15,8 @@ defmodule LocalDynamoDBTest do
     case RemoteRepo.list_tables() do
         {:ok, ["exddb_testmodel", "exddb_testmodel_range"]} -> :ok
         _any -> 
-            RemoteRepo.create_table(TestModel)
-            RemoteRepo.create_table(ModelWithHashAndRange)
+          RemoteRepo.create_table(TestModel)
+          RemoteRepo.create_table(ModelWithHashAndRange)
     end
 
     :ok
@@ -99,16 +99,16 @@ defmodule LocalDynamoDBTest do
     post_id = new_id
 
     for n <- 1..20 do
-        record = ModelWithHashAndRange.new data_id: post_id, timestamp: n, content: "trololoo"
-        {res, _record} = RemoteRepo.insert(record)
-        assert res == :ok
+      record = ModelWithHashAndRange.new data_id: post_id, timestamp: n, content: "trololoo"
+      {res, _record} = RemoteRepo.insert(record)
+      assert res == :ok
     end
 
     # Query by hash key only, use limit
     {res, results} = RemoteRepo.query(
-        from r in ModelWithHashAndRange,
-        where: r.data_id == post_id,
-        limit: 10
+      from r in ModelWithHashAndRange,
+      where: r.data_id == post_id,
+      limit: 10
     )
     assert res == :ok
 
@@ -116,9 +116,9 @@ defmodule LocalDynamoDBTest do
 
     # Query by hash and range key
     {res, results} = RemoteRepo.query(
-        from r in ModelWithHashAndRange,
-        where: r.data_id == post_id and r.timestamp > 10,
-        limit: 10
+      from r in ModelWithHashAndRange,
+      where: r.data_id == post_id and r.timestamp > 10,
+      limit: 10
     )
     assert res == :ok
 

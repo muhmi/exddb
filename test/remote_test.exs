@@ -13,8 +13,8 @@ defmodule RemoteRepoTest do
     case RemoteRepo.list_tables() do
         {:ok, ["exddb_testmodel", "exddb_testmodel_range"]} -> :ok
         _any -> 
-            RemoteRepo.create_table(TestModel)
-            RemoteRepo.create_table(ModelWithHashAndRange)
+          RemoteRepo.create_table(TestModel)
+          RemoteRepo.create_table(ModelWithHashAndRange)
     end
     :ok
   end
