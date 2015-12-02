@@ -20,6 +20,7 @@ defmodule LocalDynamoDBTest do
     :ok
   end
 
+  @tag :local
   test "list_tables" do
     list = RemoteRepo.list_tables()
     assert "exddb_testmodel" in list
