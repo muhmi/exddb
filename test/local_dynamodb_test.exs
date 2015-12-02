@@ -12,14 +12,18 @@ defmodule LocalDynamoDBTest do
   setup_all do
     Application.put_env :exddb, :erlcloud_config, Exddb.AWS.Config.Localhost, persistent: true
 
-    case RemoteRepo.list_tables() do
-        {:ok, ["exddb_testmodel", "exddb_testmodel_range"]} -> :ok
-        _any -> 
-          RemoteRepo.create_table(TestModel)
-          RemoteRepo.create_table(ModelWithHashAndRange)
+    unless "exddb_testmodel" in RemoteRepo.list_tables() do
+      RemoteRepo.create_table(TestModel)
+      RemoteRepo.create_table(ModelWithHashAndRange)
     end
 
     :ok
+  end
+
+  test "list_tables" do
+    list = RemoteRepo.list_tables()
+    assert "exddb_testmodel" in list
+    assert "exddb_testmodel_range" in list
   end
 
   @tag :local
