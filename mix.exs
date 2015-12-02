@@ -29,7 +29,6 @@ defmodule Exddb.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:jsx, "~> 2.5.2", override: true},
       {:erlcloud, "~> 0.9.2"}
     ]
   end

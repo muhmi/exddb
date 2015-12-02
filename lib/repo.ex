@@ -2,8 +2,7 @@ defmodule Exddb.Repo do
   @moduledoc ~S"""
   This module acts as a wrapper for the database, routing calls to correct backend implementations. 
 
-  Currently `:exddb` supports DynamoDB through `erlcloud` and a limiteds backend for storing data directly to the
-  local filesystem as JSON files.
+  Currently `:exddb` supports DynamoDB through `erlcloud` and usig the local DynamoDB implementation.
 
   You are expected to implement a `Repo` module for your own app, for example:
 
