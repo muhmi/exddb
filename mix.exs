@@ -8,6 +8,8 @@ defmodule Exddb.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      elixirc_paths: elixirc_paths(Mix.env),
+     description: description,
+     package: package,
      deps: deps]
   end
 
@@ -35,7 +37,7 @@ defmodule Exddb.Mixfile do
     ]
   end
 
-   defp description do
+  defp description do
     """
     Simple library for working with data in DynamoDB.
     """
@@ -47,7 +49,7 @@ defmodule Exddb.Mixfile do
      maintainers: ["Roope Kangas"],
      licenses: ["MIT"],
      links: %{"GitHub" => "https://github.com/muhmi/exddb"}
-   ]
+    ]
   end
 
   # Include some support code for :test
