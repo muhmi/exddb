@@ -18,21 +18,20 @@ defmodule Exddb.Repo do
       {:ok, %ShopApp.ReceiptModel{receipt_id: "123-456-789"", ...}}
 
   """
-  use Behaviour
   use Exddb.ConditionalOperation
 
   @type t :: module
   @type return_ok_item :: {:ok, Exddb.Model.t} | {:error, :any}
 
-  defcallback create_table(model :: Exddb.Repo.t, write_units :: integer, read_units :: integer) :: :ok | :any
-  defcallback delete_table(model :: Exddb.Repo.t) :: :ok | :any
-  defcallback list_tables(options :: []) :: :any
+  @callback create_table(model :: Exddb.Repo.t, write_units :: integer, read_units :: integer) :: :ok | :any
+  @callback delete_table(model :: Exddb.Repo.t) :: :ok | :any
+  @callback list_tables(options :: []) :: :any
 
-  defcallback insert(record :: Exddb.Model.t) :: return_ok_item
-  defcallback update(record :: Exddb.Model.t) :: return_ok_item
-  defcallback delete(record :: Exddb.Model.t) :: return_ok_item
+  @callback insert(record :: Exddb.Model.t) :: return_ok_item
+  @callback update(record :: Exddb.Model.t) :: return_ok_item
+  @callback delete(record :: Exddb.Model.t) :: return_ok_item
 
-  defcallback find(model :: Exddb.Model.t, item_id :: String.t) :: {:ok, Exddb.Model.t} | :not_found | {:error, :any}
+  @callback find(model :: Exddb.Model.t, item_id :: String.t) :: {:ok, Exddb.Model.t} | :not_found | {:error, :any}
 
   defmacro __using__(opts) do
     quote do
@@ -185,16 +184,16 @@ defmodule Exddb.Repo do
     end
   end
 
- @spec query(adapter :: Exddb.Adapter.t, table_name :: String.t, query :: map) :: {:ok, :any} | {:error, :any}
- def query(adapter, table_name, query) do
-   options = Keyword.put_new(query.options, :select, :all_attributes)
-   options = Keyword.put_new(options, :consistent_read, :true)
-   model = query.model
-   case adapter.query(table_name, query.query, options) do
-     {:ok, data} -> {:ok, data |> Stream.map(&model.__parse__(&1))}
-     {:error, error} -> {:error, error}
-   end
- end
+  @spec query(adapter :: Exddb.Adapter.t, table_name :: String.t, query :: map) :: {:ok, :any} | {:error, :any}
+  def query(adapter, table_name, query) do
+    options = Keyword.put_new(query.options, :select, :all_attributes)
+    options = Keyword.put_new(options, :consistent_read, :true)
+    model = query.model
+    case adapter.query(table_name, query.query, options) do
+      {:ok, data} -> {:ok, data |> Stream.map(&model.__parse__(&1))}
+      {:error, error} -> {:error, error}
+    end
+  end
 
   defp metadata(record) do
     model = record.__struct__

@@ -31,12 +31,11 @@ defmodule Exddb.Model do
   __removed__ from resulting item.
 
   """
-  use Behaviour
 
   @type t :: module
 
-  defcallback __schema__(t :: term) :: no_return
-  defcallback __parse__(t :: term) :: Exddb.Model.t
+  @callback __schema__(t :: term) :: no_return
+  @callback __parse__(t :: term) :: Exddb.Model.t
 
   defmacro __using__(_) do
     quote do
